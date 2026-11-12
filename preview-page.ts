@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Liquid } from "liquidjs";
 import { renderPlacements } from "./public/preview/cards.js";
-import { initialPlacements } from "./preview-api.ts";
+import { initialPlacements, previewBootstrap } from "./preview-api.ts";
 import { previewCatalog } from "./preview-catalog.ts";
 import { storefront } from "./pcx-storefront-data.ts";
 
@@ -21,6 +21,7 @@ const page = engine.parseAndRenderSync(readFileSync(new URL("layout/preview.liqu
   categories: storefront.categories,
   products: previewCatalog.filter(product => product.published),
   operations: existsSync(new URL("operations.html", assetsDirectory)),
+  bootstrap: JSON.stringify(previewBootstrap()).replace(/</g, "\\u003c"),
   recommendations: renderPlacements(
     "home", initialPlacements(), new Map(previewCatalog.map(product => [product.id, product])),
     new Set(), false, renderCard,

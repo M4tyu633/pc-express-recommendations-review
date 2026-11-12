@@ -16,17 +16,32 @@
         {% render 'pcx-home', slides: slides, categories: categories %}
       </div>
       <div class="shell preview-content">
-        <section class="preview-controls" aria-label="Preview controls">
-          <div class="session">
-            <label><input type="checkbox" id="allow-personalization" disabled> Allow personalization</label>
-            <button id="reset-session" type="button" disabled>Reset demo</button>
+        <section class="preview-controls" id="personalization-demo" aria-labelledby="personalization-heading">
+          <div class="preview-controls-copy">
+            <h2 id="personalization-heading">Try personalization</h2>
+            <p>Turn it on, then choose a browsing example to see the recommendation row change.</p>
           </div>
-          <div class="sample-replay" role="group" aria-label="Sample browsing">
-            <span>Try browsing</span>
-            <button type="button" data-action="replay" data-id="gpu-mid" disabled>Graphics cards</button>
-            <button type="button" data-action="replay" data-id="audio-usb" disabled>Headsets</button>
+          <div class="preview-controls-actions">
+            <div class="session">
+              <label><input type="checkbox" id="allow-personalization" disabled> Allow personalization</label>
+              <button id="reset-session" type="button" disabled>Reset demo</button>
+            </div>
+            <div class="sample-replay" role="group" aria-label="Sample browsing">
+              <span>Try browsing</span>
+              <button type="button" data-action="replay" data-id="gpu-mid" disabled>Graphics cards</button>
+              <button type="button" data-action="replay" data-id="audio-usb" disabled>Headsets</button>
+            </div>
           </div>
         </section>
+        <details class="pcx-presenter-guide">
+          <summary>Presenter guide</summary>
+          <ol>
+            <li>Start with personalization off and point out the <strong>Bestsellers</strong> row.</li>
+            <li>Allow personalization, then choose <strong>Graphics cards</strong>. Point out <strong>Recommended For You</strong> and the reason beneath each product.</li>
+            <li>Choose <strong>Headsets</strong> to show the same row adapting to a different shopper.</li>
+            <li>Turn personalization off to clear the sample activity and return to Bestsellers.</li>
+          </ol>
+        </details>
         <p id="preview-status" role="status">Loading the demo catalog…</p>
         <div id="page-context"></div>
         <div id="placements">{{ recommendations }}</div>
@@ -45,5 +60,6 @@
     {% for product in products %}
       <template id="pcx-card-{{ product.id | escape }}">{% render 'pcx-product-card', product: product, actions: true %}</template>
     {% endfor %}
+    <script type="application/json" id="pcx-preview-bootstrap">{{ bootstrap }}</script>
   </body>
 </html>

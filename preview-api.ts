@@ -22,6 +22,10 @@ export function initialPlacements() {
   }, Date.now()).placements;
 }
 
+export function previewBootstrap() {
+  return { catalog: publicCatalog, placements: initialPlacements() };
+}
+
 function parsePlacementInput(value: unknown): PlacementInput | undefined {
   const ranking = parseRankingInput(value);
   if (!ranking || !isObject(value)) return;
@@ -68,7 +72,7 @@ async function readInput(request: Request): Promise<unknown> {
 
 export async function handlePreview(request: Request) {
   if (request.method === "GET") {
-    return json({ catalog: publicCatalog, placements: initialPlacements() }, 200, {
+    return json(previewBootstrap(), 200, {
       "Cache-Control": "public, max-age=60, s-maxage=300",
     });
   }

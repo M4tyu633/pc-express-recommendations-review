@@ -99,9 +99,10 @@ async function refresh(message) {
   pendingRequest?.abort();
   const request = new AbortController();
   pendingRequest = request;
-  const signal = AbortSignal.any([request.signal, AbortSignal.timeout(950)]);
+  const signal = AbortSignal.any([request.signal, AbortSignal.timeout(2800)]);
   status.textContent = message;
   showContext();
+  slots.classList.remove("pcx-fresh");
   slots.innerHTML = renderPlacements(surface, fallbackRows(), catalog, cart, true);
   try {
     const response = await fetch("/api/preview", {
@@ -117,6 +118,7 @@ async function refresh(message) {
     if (signal.aborted || pendingRequest !== request) return;
     if (surface === "search") showContext(data.searchMatches);
     slots.innerHTML = renderPlacements(surface, data.placements, catalog, cart, true);
+    slots.classList.add("pcx-fresh");
   } catch {
     if (request.signal.aborted || pendingRequest !== request) return;
     if (surface === "search") showContext([]);
@@ -173,7 +175,7 @@ document.addEventListener("click", event => {
     events.length = 0;
     surface = "home";
     record("product_viewed", id);
-    void refresh("Replayed a sample view for " + catalog.get(id).name + ".");
+    void refresh("Sample shopper viewed " + catalog.get(id).name + ". See the recommendation row below.");
   } else if (action === "cart") {
     const product = catalog.get(id);
     if (!product?.inStock) return;
@@ -224,11 +226,9 @@ reset.addEventListener("click", () => {
   void refresh("Sample session reset.");
 });
 
-async function initialize() {
+function initialize() {
   try {
-    const response = await fetch("/api/preview", { signal: AbortSignal.timeout(1500) });
-    if (!response.ok) throw new Error("Preview API unavailable");
-    const data = await response.json();
+    const data = JSON.parse(document.getElementById("pcx-preview-bootstrap").textContent);
     for (const product of data.catalog) catalog.set(product.id, product);
     anonymousRows = data.placements;
     consent.checked = false;

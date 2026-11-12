@@ -6,6 +6,8 @@ The page renders from Shopify-style Liquid layout and snippet files under `store
 
 After opting in, use the sample browsing buttons to replay a graphics-card or headset view. Each replay replaces the demo browsing history and keeps the current cart.
 
+To present the demo, open **Try personalization** from the red announcement bar, then open **Presenter guide**. Start with Bestsellers, choose Graphics cards after opting in, switch to Headsets, then turn personalization off. The displayed product reasons explain each change.
+
 The preview reuses the twelve observed storefront placement IDs (`home_recommendations_1` to `_3`, with corresponding `pdp`, `srp` and `cart` prefixes) and adapts the theme's card pattern. Home shows session recommendations and top sellers. Product pages use sample co-purchases and similar items. Search shows relevant sample products, and Cart shows curated pairings and top sellers. Empty slots are hidden. Products that are sold out, unpublished, already in the cart or the currently viewed product are excluded where applicable.
 
 The page loads its fixtures and recommendations from `/api/preview` on its own origin. Anonymous fallback cards are built into the page, and a short deadline protects the UI when the API fails. Event history lives in the current page and is sent only with the demo's personalization switch on. The API validates and limits requests, builds its catalog and search indexes once per instance, scores price-near candidates for the strongest categories, and keeps personalized responses out of caches.
