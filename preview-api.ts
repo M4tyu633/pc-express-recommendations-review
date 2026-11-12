@@ -4,6 +4,21 @@ import { isId, isObject, MAX_BODY_BYTES, parseRankingInput } from "./ranking-inp
 
 const surfaces = new Set<Surface>(["home", "product", "search", "cart"]);
 const engine = createPlacementEngine(previewCatalog);
+export const sampleShoppers = [
+  { productId: "gpu-mid", budgetPhp: 25_000, label: "GPU up to ₱25,000" },
+  { productId: "gpu-max", budgetPhp: 150_000, label: "GPU up to ₱150,000" },
+  { productId: "audio-usb", budgetPhp: 4_000, label: "Headsets up to ₱4,000" },
+] as const;
+const sampleResults = Object.fromEntries(sampleShoppers.map(({ productId, budgetPhp }) => [
+  productId,
+  {
+    budgetPhp,
+    placements: engine.recommend({
+      surface: "home", personalizationAllowed: true, cartProductIds: [], budgetPhp,
+      events: [{ id: "sample-" + productId, productId, type: "product_viewed", occurredAtMs: 0 }],
+    }, 0).placements,
+  },
+]));
 const publicCatalog = previewCatalog.filter(product => product.published).map(product => ({
   id: product.id,
   name: product.name,
@@ -23,7 +38,7 @@ export function initialPlacements() {
 }
 
 export function previewBootstrap() {
-  return { catalog: publicCatalog, placements: initialPlacements() };
+  return { catalog: publicCatalog, placements: initialPlacements(), sampleResults };
 }
 
 function parsePlacementInput(value: unknown): PlacementInput | undefined {

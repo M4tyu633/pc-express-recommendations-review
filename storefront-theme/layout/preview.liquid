@@ -32,6 +32,7 @@
           </div>
         </section>
         <p id="preview-status" role="status">Loading the demo catalog…</p>
+        <button id="retry-preview" type="button" hidden>Try again</button>
         <div id="page-context"></div>
         <div id="placements">{{ recommendations }}</div>
         <section class="sample-catalog" id="sample-catalog" aria-labelledby="catalog-heading">
@@ -42,16 +43,16 @@
       </div>
     </main>
     <button type="button" class="pcx-guide-open pcx-guide-launcher" aria-controls="pcx-demo-guide" aria-expanded="false" disabled>Demo guide</button>
-    <section id="pcx-demo-guide" class="pcx-demo-guide" popover="manual" aria-labelledby="pcx-guide-title">
+    <section id="pcx-demo-guide" class="pcx-demo-guide" popover="manual" aria-labelledby="pcx-guide-title" hidden>
       <div class="pcx-guide-header">
         <h2 id="pcx-guide-title">See the store adapt to you</h2>
         <button id="pcx-guide-close" type="button" aria-label="Close demo guide">&times;</button>
       </div>
       <p>Choose a sample shopper. Try both GPU budgets to see how the same category gets different picks.</p>
       <div class="pcx-guide-samples" role="group" aria-label="Sample browsing">
-        <button type="button" data-action="replay" data-id="gpu-mid" data-budget="25000" disabled>GPU up to ₱25,000</button>
-        <button type="button" data-action="replay" data-id="gpu-max" data-budget="150000" disabled>GPU up to ₱150,000</button>
-        <button type="button" data-action="replay" data-id="audio-usb" data-budget="4000" disabled>Headsets up to ₱4,000</button>
+        {% for shopper in sampleShoppers %}
+          <button type="button" data-action="replay" data-id="{{ shopper.productId | escape }}" data-budget="{{ shopper.budgetPhp }}" disabled>{{ shopper.label | escape }}</button>
+        {% endfor %}
       </div>
       <label class="pcx-guide-consent"><input type="checkbox" id="allow-personalization" disabled> Use my browsing in this demo</label>
       <div class="pcx-guide-samples">

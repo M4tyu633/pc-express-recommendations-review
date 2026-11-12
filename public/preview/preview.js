@@ -5,6 +5,7 @@ const controls = document.querySelectorAll("button[disabled], input[disabled]");
 const consent = document.querySelector("#allow-personalization");
 const reset = document.querySelector("#reset-session");
 const status = document.querySelector("#preview-status");
+const retry = document.querySelector("#retry-preview");
 const searchForm = document.querySelector("#search-form");
 const searchBox = document.querySelector("#search-query");
 const catalogSection = document.querySelector("#sample-catalog");
@@ -35,10 +36,13 @@ let surface = "home";
 let selectedProduct = "gpu-mid";
 let query = "graphics cards";
 let anonymousRows = [];
+let sampleResults = {};
 let pendingRequest;
 let homeCartKey;
 let visibleRows;
 let guideTrigger;
+let guideOpen = false;
+let eventCount = 0;
 let sampleEvent;
 let shoppingQuery;
 let budgetPhp;
@@ -69,14 +73,18 @@ function updateShoppingContext() {
 function openGuide(trigger, revealResults = false) {
   guideTrigger = trigger;
   if (revealResults) demoSection.scrollIntoView({ block: "start" });
-  if (guide.matches(":popover-open")) return;
-  guide.showPopover();
+  if (guideOpen) return;
+  guide.hidden = false;
+  guide.showPopover?.();
+  guideOpen = true;
   for (const button of guideButtons) button.setAttribute("aria-expanded", "true");
   guideClose.focus({ preventScroll: true });
 }
 
 function closeGuide() {
-  guide.hidePopover();
+  guide.hidePopover?.();
+  guide.hidden = true;
+  guideOpen = false;
   for (const button of guideButtons) button.setAttribute("aria-expanded", "false");
   guideTrigger?.focus({ preventScroll: true });
 }
@@ -84,7 +92,7 @@ function closeGuide() {
 for (const button of guideButtons) button.addEventListener("click", () => openGuide(button));
 guideClose.addEventListener("click", closeGuide);
 document.addEventListener("keydown", event => {
-  if (event.key === "Escape" && guide.matches(":popover-open")) {
+  if (event.key === "Escape" && guideOpen) {
     event.preventDefault();
     closeGuide();
   }
@@ -95,7 +103,7 @@ document.querySelector('.announcement-bar a[href="#personalization-demo"]').addE
   openGuide(event.currentTarget, true);
 });
 
-function showContext(searchMatches = null) {
+function showContext(searchMatches = null, searchUnavailable = false) {
   catalogSection.hidden = surface !== "home";
   if (homeContent) homeContent.hidden = surface !== "home";
   cartCount.textContent = String(cart.size);
@@ -141,7 +149,8 @@ function showContext(searchMatches = null) {
       });
       const content = matches.length
         ? `<div class="product-grid">${matches.join("")}</div>`
-        : `<p class="empty">${searchMatches === null ? "Loading sample results…" : "No matching sample products."}</p>`;
+        : `<p class="empty">${searchUnavailable ? "Search is temporarily unavailable."
+          : searchMatches === null ? "Loading sample results…" : "No matching sample products."}</p>`;
       pageContext.innerHTML = `<section class="context"><h2>Results for “${escapeHtml(query)}”</h2>${content}</section>`;
       break;
     }
@@ -160,10 +169,17 @@ function showContext(searchMatches = null) {
   }
 }
 
+function savedSample() {
+  if (surface !== "home" || comparing || !sampleEvent || cart.size || events.length || shoppingQuery) return;
+  const example = sampleResults[sampleEvent.productId];
+  if (example?.budgetPhp === budgetPhp) return example.placements;
+}
+
 function fallbackRows() {
   const budget = activeBudget();
   const affordable = item => !budget || catalog.get(item.productId).pricePhp <= budget;
   if (surface === "home") return anonymousRows.map(row => ({ ...row, items: row.items.filter(affordable) }));
+  if (surface === "cart" && cart.size) return [];
   const excluded = new Set(cart);
   if (surface === "product") excluded.add(selectedProduct);
   const items = [];
@@ -191,8 +207,9 @@ async function refresh(message) {
   pendingRequest?.abort();
   const request = new AbortController();
   pendingRequest = request;
-  const signal = AbortSignal.any([request.signal, AbortSignal.timeout(2800)]);
+  const timeout = setTimeout(() => request.abort(), 2800);
   status.textContent = message;
+  retry.hidden = true;
   showContext();
   updateShoppingContext();
   const sameHome = surface === "home" && visibleRows?.surface === "home" &&
@@ -201,10 +218,11 @@ async function refresh(message) {
   const history = allowed ? [
     ...(sampleEvent ? [sampleEvent] : []), ...(consent.checked ? events : []),
   ].slice(-100) : [];
-  if (!allowed || !sameHome) renderRows(fallbackRows());
+  const savedRows = savedSample();
+  if (savedRows || !allowed || !sameHome) renderRows(savedRows ?? fallbackRows());
   try {
     const response = await fetch("/api/preview", {
-      method: "POST", headers: { "Content-Type": "application/json" }, signal,
+      method: "POST", headers: { "Content-Type": "application/json" }, signal: request.signal,
       body: JSON.stringify({
         surface, productId: surface === "product" ? selectedProduct : undefined,
         query: surface === "search" ? query : undefined, personalizationAllowed: allowed,
@@ -214,7 +232,8 @@ async function refresh(message) {
     });
     if (!response.ok) throw new Error("Preview API unavailable");
     const data = await response.json();
-    if (signal.aborted || pendingRequest !== request) return;
+    if (pendingRequest !== request) return;
+    if (request.signal.aborted) throw new Error("Preview API timed out");
     if (surface === "search") showContext(data.searchMatches);
     renderRows(data.placements, true);
     if (surface === "home" && activeBudget() && allowed
@@ -222,16 +241,23 @@ async function refresh(message) {
       status.textContent = "No matching products at this budget. Try a higher max price or another category.";
     }
   } catch {
-    if (request.signal.aborted || pendingRequest !== request) return;
-    if (surface === "search") showContext([]);
-    renderRows(fallbackRows());
-    status.textContent = "Suggestions are unavailable. Showing popular picks.";
+    if (pendingRequest !== request) return;
+    if (surface === "search") showContext([], true);
+    renderRows(savedRows ?? fallbackRows());
+    status.textContent = savedRows ? "Showing saved picks for this sample shopper."
+      : "Live suggestions are temporarily unavailable.";
+    retry.hidden = false;
+  } finally {
+    clearTimeout(timeout);
+    if (pendingRequest === request) pendingRequest = undefined;
   }
 }
 
+retry.addEventListener("click", () => void refresh("Trying again…"));
+
 function record(type, productId) {
   if (!consent.checked) return;
-  events.push({ id: crypto.randomUUID(), type, productId, occurredAtMs: Date.now() });
+  events.push({ id: "session-" + (++eventCount), type, productId, occurredAtMs: Date.now() });
   if (events.length > 100) events.shift();
 }
 
@@ -363,6 +389,8 @@ function initialize() {
     const data = JSON.parse(document.getElementById("pcx-preview-bootstrap").textContent);
     for (const product of data.catalog) catalog.set(product.id, product);
     anonymousRows = data.placements;
+    sampleResults = data.sampleResults ?? {};
+    if (!guide.showPopover) guide.removeAttribute("popover");
     consent.checked = false;
     for (const control of controls) control.disabled = false;
     showContext();

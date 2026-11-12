@@ -76,6 +76,7 @@
 .pcx-preview .pcx-guide-open { background: var(--pcx-blue); color: #fff; border: 1px solid var(--pcx-blue); font-weight: 700; }
 .pcx-guide-launcher { position: fixed; z-index: 5; bottom: 18px; right: 18px; box-shadow: 0 2px 10px #0003; }
 .pcx-demo-guide {
+  position: fixed; z-index: 8;
   inset: auto 18px 18px auto; margin: 0; width: min(400px, calc(100% - 36px)); max-height: min(510px, calc(100dvh - 36px));
   padding: 20px; border: 1px solid #c7d4e9; border-top: 4px solid var(--pcx-blue); border-radius: 8px;
   background: #fff; color: var(--ink); box-shadow: 0 8px 34px #0c25504a; overflow: auto;
@@ -93,6 +94,7 @@
 .pcx-guide-footer { justify-content: space-between; border-top: 1px solid #dce4ef; margin-top: 14px; padding-top: 9px; }
 .pcx-demo-guide #pcx-guide-result { color: #163e7c; font-weight: 700; }
 .pcx-preview #preview-status { font-size: 13px; margin: 10px 0 24px; }
+.pcx-preview #retry-preview { margin: 0 0 16px; }
 .pcx-preview .placement h2, .pcx-preview .sample-catalog h2 { font-size: 24px; margin-bottom: 20px; }
 .pcx-placement-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 20px; }
 .pcx-preview .pcx-placement-heading h2 { margin: 0; }
