@@ -47,10 +47,42 @@ test("product uses sample co-purchases and cart uses its curated pairings", () =
   assert.ok(!product.placements.flatMap(row => row.items).some(item => item.productId === "gpu-mid"));
   const cart = engine.recommend({ ...base, surface: "cart", cartProductIds: ["gpu-mid"] }, now);
   assert.equal(cart.placements[0].id, "cart_recommendations_1");
-  assert.equal(cart.placements[0].title, "Related Products");
+  assert.equal(cart.placements[0].title, "Complete your setup");
   assert.deepEqual(cart.placements[0].items.map(item => item.productId), ["psu-650", "monitor-fhd"]);
+  assert.ok(cart.placements[0].items.every(item => item.reason.includes("GeForce RTX 5050")));
+  assert.equal(cart.placements.length, 1);
+  const withAccessory = engine.recommend({ ...base, surface: "cart", cartProductIds: ["gpu-mid", "psu-650"] }, now);
+  assert.deepEqual(withAccessory.placements[0].items.map(item => item.productId), ["monitor-fhd"]);
   const emptyCart = engine.recommend({ ...base, surface: "cart" }, now);
   assert.deepEqual(emptyCart.placements.map(row => [row.id, row.title]), [["cart_recommendations_3", "Top Sellers"]]);
+});
+
+test("different prices for the same shopping category change the first recommendation", () => {
+  const low = engine.recommend({
+    ...base, personalizationAllowed: true, events: [viewed("gpu-mid")], budgetPhp: 25_000,
+  }, now);
+  const high = engine.recommend({
+    ...base, personalizationAllowed: true, events: [viewed("gpu-max")], budgetPhp: 150_000,
+  }, now);
+  assert.equal(low.placements[0].items[0].productId, "gpu-mid");
+  assert.equal(high.placements[0].items[0].productId, "gpu-max");
+  for (const [result, limit] of [[low, 25_000], [high, 150_000]] as const) {
+    assert.ok(result.placements.flatMap(row => row.items).every(item =>
+      previewCatalog.find(p => p.id === item.productId)!.pricePhp <= limit));
+  }
+  const empty = engine.recommend({
+    ...base, personalizationAllowed: true, events: [viewed("gpu-mid")], budgetPhp: 1_000,
+  }, now);
+  assert.ok(empty.placements.every(row => row.id !== "home_recommendations_1"));
+});
+
+test("a search informs later suggestions only when the shopper allows it", () => {
+  const requested = { ...base, shoppingQuery: "monitor" };
+  const optedIn = engine.recommend({ ...requested, personalizationAllowed: true }, now);
+  assert.equal(optedIn.placements[0].title, "Recommended for you");
+  assert.ok(optedIn.placements[0].items.every(item =>
+    item.productId.startsWith("monitor-") && item.reason === "Matches your recent search"));
+  assert.deepEqual(engine.recommend(requested, now), engine.recommend(base, now));
 });
 
 test("search ranks matching products and returns a safe fallback for an unknown query", () => {

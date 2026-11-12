@@ -32,6 +32,8 @@ test("Vercel entry returns public fixture catalog and private, independent sessi
 test("preview API rejects bad contexts, cross-site requests and oversized payloads", async () => {
   assert.equal((await vercelPreview.fetch(post({ ...plain, surface: "unknown" }))).status, 400);
   assert.equal((await vercelPreview.fetch(post({ ...plain, query: "x".repeat(81) }))).status, 400);
+  assert.equal((await vercelPreview.fetch(post({ ...plain, shoppingQuery: "x".repeat(81) }))).status, 400);
+  assert.equal((await vercelPreview.fetch(post({ ...plain, budgetPhp: -1 }))).status, 400);
   assert.equal((await vercelPreview.fetch(post(plain, { "Sec-Fetch-Site": "cross-site" }))).status, 403);
   assert.equal((await vercelPreview.fetch(post({ ...plain, extra: "x".repeat(33_000) }))).status, 413);
   const method = await vercelPreview.fetch(new Request(url, { method: "PUT" }));

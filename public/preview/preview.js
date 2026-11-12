@@ -9,6 +9,11 @@ const searchForm = document.querySelector("#search-form");
 const searchBox = document.querySelector("#search-query");
 const catalogSection = document.querySelector("#sample-catalog");
 const catalogGrid = document.querySelector("#catalog-grid");
+const budgetForm = document.querySelector("#budget-form");
+const budgetInput = document.querySelector("#budget-php");
+const shoppingContext = document.querySelector("#shopping-context");
+const compareButton = document.querySelector('[data-action="compare"]');
+const demoCart = document.querySelector("#demo-cart");
 const pageContext = document.querySelector("#page-context");
 const slots = document.querySelector("#placements");
 const demoSection = document.querySelector("#personalization-demo");
@@ -34,6 +39,32 @@ let pendingRequest;
 let homeCartKey;
 let visibleRows;
 let guideTrigger;
+let sampleEvent;
+let shoppingQuery;
+let budgetPhp;
+let comparing = false;
+
+function activeBudget() {
+  return comparing ? undefined : budgetPhp;
+}
+
+function updateShoppingContext() {
+  const sample = catalog.get(sampleEvent?.productId);
+  const parts = [];
+  if (comparing) parts.push("Comparing with the default Bestsellers");
+  else {
+    if (sample) parts.push(`Sample shopper · ${sample.category}`);
+    else if (shoppingQuery && consent.checked) parts.push(`You searched for “${shoppingQuery}”`);
+    if (budgetPhp) parts.push(`Up to ${formatPrice(budgetPhp)} per item`);
+  }
+  shoppingContext.textContent = parts.join(" · ") || "Try a shopper example or browse products to build your own picks.";
+  compareButton.disabled = !sampleEvent && !events.length && !shoppingQuery && !budgetPhp;
+  compareButton.textContent = comparing ? "Show my picks" : "Compare with Bestsellers";
+  compareButton.setAttribute("aria-pressed", String(comparing));
+  for (const button of replayButtons) {
+    button.setAttribute("aria-pressed", String(!comparing && button.dataset.id === sampleEvent?.productId));
+  }
+}
 
 function openGuide(trigger, revealResults = false) {
   guideTrigger = trigger;
@@ -68,6 +99,8 @@ function showContext(searchMatches = null) {
   catalogSection.hidden = surface !== "home";
   if (homeContent) homeContent.hidden = surface !== "home";
   cartCount.textContent = String(cart.size);
+  demoCart.hidden = !cart.size || surface === "cart";
+  demoCart.textContent = `View sample cart (${cart.size})`;
   for (const button of nav.querySelectorAll("button")) {
     if (button.dataset.surface === surface) button.setAttribute("aria-current", "page");
     else button.removeAttribute("aria-current");
@@ -113,24 +146,29 @@ function showContext(searchMatches = null) {
       break;
     }
     case "cart": {
+      const subtotal = [...cart].reduce((total, id) => total + catalog.get(id).pricePhp, 0);
       const items = [...cart].map(id => {
         const product = catalog.get(id);
         return productCard(product, product.description, cart, true);
       });
       const content = items.length ? `<div class="product-grid">${items.join("")}</div>` : '<p class="empty">Your sample cart is empty.</p>';
-      pageContext.innerHTML = `<section class="context"><h2>Your cart</h2>${content}</section>`;
+      pageContext.innerHTML = `<section class="context"><h2>Your sample cart</h2>${content}${
+        items.length ? `<p class="pcx-cart-subtotal">Subtotal <strong>${formatPrice(subtotal)}</strong></p>` : ""
+      }</section>`;
       break;
     }
   }
 }
 
 function fallbackRows() {
-  if (surface === "home") return anonymousRows;
+  const budget = activeBudget();
+  const affordable = item => !budget || catalog.get(item.productId).pricePhp <= budget;
+  if (surface === "home") return anonymousRows.map(row => ({ ...row, items: row.items.filter(affordable) }));
   const excluded = new Set(cart);
   if (surface === "product") excluded.add(selectedProduct);
   const items = [];
   for (const item of anonymousRows.flatMap(row => row.items)) {
-    if (excluded.has(item.productId)) continue;
+    if (excluded.has(item.productId) || (surface !== "cart" && !affordable(item))) continue;
     items.push(item);
     excluded.add(item.productId);
     if (items.length === 4) break;
@@ -144,7 +182,7 @@ function renderRows(rows, animate = false) {
     slots.classList.toggle("pcx-fresh", animate);
     slots.innerHTML = markup;
   }
-  visibleRows = { markup, surface, cartKey: [...cart].join(",") };
+  visibleRows = { markup, surface, budget: activeBudget(), cartKey: [...cart].join(",") };
   const title = slots.querySelector("h2")?.textContent;
   guideResult.textContent = title ? `Showing ${title}` : "No suggestions for this page";
 }
@@ -156,16 +194,22 @@ async function refresh(message) {
   const signal = AbortSignal.any([request.signal, AbortSignal.timeout(2800)]);
   status.textContent = message;
   showContext();
+  updateShoppingContext();
   const sameHome = surface === "home" && visibleRows?.surface === "home" &&
-    visibleRows.cartKey === [...cart].join(",");
-  if (!consent.checked || !sameHome) renderRows(fallbackRows());
+    visibleRows.cartKey === [...cart].join(",") && visibleRows.budget === activeBudget();
+  const allowed = !comparing && (consent.checked || Boolean(sampleEvent));
+  const history = allowed ? [
+    ...(sampleEvent ? [sampleEvent] : []), ...(consent.checked ? events : []),
+  ].slice(-100) : [];
+  if (!allowed || !sameHome) renderRows(fallbackRows());
   try {
     const response = await fetch("/api/preview", {
       method: "POST", headers: { "Content-Type": "application/json" }, signal,
       body: JSON.stringify({
         surface, productId: surface === "product" ? selectedProduct : undefined,
-        query: surface === "search" ? query : undefined, personalizationAllowed: consent.checked,
-        events: consent.checked ? events : [], cartProductIds: [...cart],
+        query: surface === "search" ? query : undefined, personalizationAllowed: allowed,
+        shoppingQuery: allowed && consent.checked ? shoppingQuery : undefined,
+        budgetPhp: activeBudget(), events: history, cartProductIds: [...cart],
       }),
     });
     if (!response.ok) throw new Error("Preview API unavailable");
@@ -173,6 +217,10 @@ async function refresh(message) {
     if (signal.aborted || pendingRequest !== request) return;
     if (surface === "search") showContext(data.searchMatches);
     renderRows(data.placements, true);
+    if (surface === "home" && activeBudget() && allowed
+      && !data.placements.some(row => row.id === "home_recommendations_1")) {
+      status.textContent = "No matching products at this budget. Try a higher max price or another category.";
+    }
   } catch {
     if (request.signal.aborted || pendingRequest !== request) return;
     if (surface === "search") showContext([]);
@@ -187,15 +235,12 @@ function record(type, productId) {
   if (events.length > 100) events.shift();
 }
 
-function updateReplayButtons() {
-  for (const button of replayButtons) button.disabled = !consent.checked;
-}
-
 function view(id) {
   const product = catalog.get(id);
   if (!product) return;
   selectedProduct = id;
   surface = "product";
+  comparing = false;
   record("product_viewed", id);
   void refresh(`Viewing ${product.name}.`);
 }
@@ -214,8 +259,11 @@ document.addEventListener("click", event => {
     void refresh(surface === "home" && consent.checked
       ? "Suggestions adapt to what you view and add in this session."
       : "Showing recommendations for this page.");
+    if (surface === "cart") demoSection.scrollIntoView({ block: "start" });
   } else if (action === "category") {
     query = button.dataset.query;
+    if (consent.checked) shoppingQuery = query;
+    comparing = false;
     searchBox.value = query;
     surface = "search";
     button.closest("details")?.removeAttribute("open");
@@ -226,12 +274,21 @@ document.addEventListener("click", event => {
     document.getElementById(button.dataset.target)?.scrollIntoView({ block: "start" });
   } else if (action === "view") {
     view(id);
-  } else if (action === "replay" && consent.checked && catalog.has(id)) {
+  } else if (action === "replay" && catalog.has(id)) {
     events.length = 0;
+    shoppingQuery = undefined;
+    cart.clear();
+    comparing = false;
+    budgetPhp = Number(button.dataset.budget);
+    budgetInput.value = String(budgetPhp);
+    sampleEvent = { id: "sample-" + id, type: "product_viewed", productId: id, occurredAtMs: Date.now() - 1000 };
     surface = "home";
-    record("product_viewed", id);
-    void refresh("Sample shopper viewed " + catalog.get(id).name + ". See the recommendation row below.");
+    void refresh("Sample shopper viewed " + catalog.get(id).description + ".");
     demoSection.scrollIntoView({ block: "start" });
+  } else if (action === "compare") {
+    comparing = !comparing;
+    surface = "home";
+    void refresh(comparing ? "These are the default picks for the same storefront." : "Showing picks for this shopper.");
   } else if (action === "cart") {
     const product = catalog.get(id);
     if (!product?.inStock) return;
@@ -259,14 +316,29 @@ searchForm.addEventListener("submit", event => {
     return;
   }
   surface = "search";
+  if (consent.checked) shoppingQuery = query;
+  comparing = false;
   void refresh(`Searching for ${query}.`);
 });
 
+budgetForm.addEventListener("submit", event => {
+  event.preventDefault();
+  budgetPhp = budgetInput.value ? budgetInput.valueAsNumber : undefined;
+  comparing = false;
+  void refresh(budgetPhp ? `Price limit set to ${formatPrice(budgetPhp)} per item.` : "Price limit removed.");
+});
+
 consent.addEventListener("change", () => {
-  if (!consent.checked) events.length = 0;
-  updateReplayButtons();
+  sampleEvent = undefined;
+  comparing = false;
+  if (!consent.checked) {
+    events.length = 0;
+    shoppingQuery = undefined;
+    budgetPhp = undefined;
+    budgetInput.value = "";
+  }
   void refresh(consent.checked
-    ? "Personalization is on. Replay sample browsing or view a product."
+    ? "Personalization is on. Try searching, viewing a product or adding it to your cart."
     : "Personalization is off. Browsing activity was cleared.");
 });
 
@@ -274,7 +346,11 @@ reset.addEventListener("click", () => {
   events.length = 0;
   cart.clear();
   consent.checked = false;
-  updateReplayButtons();
+  sampleEvent = undefined;
+  shoppingQuery = undefined;
+  budgetPhp = undefined;
+  budgetInput.value = "";
+  comparing = false;
   searchBox.value = "";
   query = "graphics cards";
   selectedProduct = "gpu-mid";
@@ -289,10 +365,11 @@ function initialize() {
     anonymousRows = data.placements;
     consent.checked = false;
     for (const control of controls) control.disabled = false;
-    updateReplayButtons();
     showContext();
+    updateShoppingContext();
     renderRows(anonymousRows);
     status.textContent = "Choose a product or allow personalization to try a shopper session.";
+    openGuide(document.querySelector(".pcx-guide-launcher"));
   } catch {
     status.textContent = "The sample catalog is unavailable. Popular picks are shown below.";
   }

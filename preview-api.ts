@@ -29,11 +29,14 @@ export function previewBootstrap() {
 function parsePlacementInput(value: unknown): PlacementInput | undefined {
   const ranking = parseRankingInput(value);
   if (!ranking || !isObject(value)) return;
-  const { surface, productId, query } = value;
+  const { surface, productId, query, shoppingQuery, budgetPhp } = value;
   if (typeof surface !== "string" || !surfaces.has(surface as Surface)
     || (productId !== undefined && !isId(productId))
-    || (query !== undefined && (typeof query !== "string" || query.length > 80))) return;
-  return { ...ranking, surface: surface as Surface, productId, query };
+    || (query !== undefined && (typeof query !== "string" || query.length > 80))
+    || (shoppingQuery !== undefined && (typeof shoppingQuery !== "string" || shoppingQuery.length > 80))
+    || (budgetPhp !== undefined && (typeof budgetPhp !== "number" || !Number.isSafeInteger(budgetPhp)
+      || budgetPhp < 1 || budgetPhp > 10_000_000))) return;
+  return { ...ranking, surface: surface as Surface, productId, query, shoppingQuery, budgetPhp };
 }
 
 function json(data: unknown, status = 200, headers: Record<string, string> = {}) {
