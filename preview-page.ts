@@ -1,8 +1,9 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { stripTypeScriptTypes } from "node:module";
 import { fileURLToPath } from "node:url";
 import { Liquid } from "liquidjs";
 import { renderPlacements } from "./public/preview/cards.js";
-import { initialPlacements, previewBootstrap, sampleShoppers } from "./preview-api.ts";
+import { initialPlacements, sampleShoppers } from "./preview-api.ts";
 import { previewCatalog } from "./preview-catalog.ts";
 import { storefront } from "./pcx-storefront-data.ts";
 
@@ -15,14 +16,16 @@ engine.registerFilter("money", (cents: number) => new Intl.NumberFormat("en-PH",
 }).format(cents / 100));
 const renderCard = (product: object, detail: string) =>
   engine.renderFileSync("pcx-product-card", { product, detail, actions: false });
+const publishedProducts = previewCatalog.filter(product => product.published);
+const bootstrap = { catalog: publishedProducts };
 const page = engine.parseAndRenderSync(readFileSync(new URL("layout/preview.liquid", theme), "utf8"), {
   logo: storefront.logo,
   slides: storefront.slides,
   categories: storefront.categories,
   sampleShoppers,
-  products: previewCatalog.filter(product => product.published),
+  products: publishedProducts,
   operations: existsSync(new URL("operations.html", assetsDirectory)),
-  bootstrap: JSON.stringify(previewBootstrap()).replace(/</g, "\\u003c"),
+  bootstrap: JSON.stringify(bootstrap).replace(/</g, "\\u003c"),
   recommendations: renderPlacements(
     "home", initialPlacements(), new Map(previewCatalog.map(product => [product.id, product])),
     new Set(), false, renderCard,
@@ -30,6 +33,11 @@ const page = engine.parseAndRenderSync(readFileSync(new URL("layout/preview.liqu
 });
 
 export const previewPage = page;
+
+function browserRankingModule(file: "engine.ts" | "placement-engine.ts") {
+  const source = readFileSync(new URL(file, import.meta.url), "utf8");
+  return stripTypeScriptTypes(source).replace('from "./engine.ts"', 'from "./engine.js"');
+}
 
 export const previewAssets = new Map<string, { contentType: string; body: string | Buffer }>([
   ["/preview", { contentType: "text/html; charset=utf-8", body: page }],
@@ -44,6 +52,12 @@ export const previewAssets = new Map<string, { contentType: string; body: string
   ["/cards.js", {
     contentType: "text/javascript; charset=utf-8",
     body: readFileSync(new URL("cards.js", assetsDirectory), "utf8"),
+  }],
+  ["/ranking/engine.js", {
+    contentType: "text/javascript; charset=utf-8", body: browserRankingModule("engine.ts"),
+  }],
+  ["/ranking/placement-engine.js", {
+    contentType: "text/javascript; charset=utf-8", body: browserRankingModule("placement-engine.ts"),
   }],
   ...Object.entries({
     "operations.html": "text/html",

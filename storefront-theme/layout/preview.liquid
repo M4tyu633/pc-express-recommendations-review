@@ -18,8 +18,8 @@
       <div class="shell preview-content">
         <section class="preview-controls" id="personalization-demo" aria-labelledby="personalization-heading">
           <div class="preview-controls-copy">
-            <h2 id="personalization-heading">Try personalization</h2>
-            <p id="shopping-context">Compare the same storefront for different shopping needs.</p>
+            <h2 id="personalization-heading">Your recommendations</h2>
+            <p id="shopping-context">Your picks update as you shop.</p>
           </div>
           <div class="pcx-preview-actions">
             <form id="budget-form">
@@ -28,15 +28,15 @@
               <button type="submit" disabled>Apply</button>
             </form>
             <button type="button" data-action="compare" disabled>Compare with Bestsellers</button>
+            <button id="home-picks" type="button" data-action="browse" data-target="personalization-demo" hidden disabled>See your home picks</button>
             <button id="demo-cart" type="button" data-action="navigate" data-surface="cart" hidden disabled>View sample cart</button>
           </div>
         </section>
         <p id="preview-status" role="status">Loading the demo catalog…</p>
-        <button id="retry-preview" type="button" hidden>Try again</button>
         <div id="page-context"></div>
         <div id="placements">{{ recommendations }}</div>
         <section class="sample-catalog" id="sample-catalog" aria-labelledby="catalog-heading">
-          <h2 id="catalog-heading">Featured Products</h2>
+          <h2 id="catalog-heading" tabindex="-1">Featured Products</h2>
           <div class="product-grid" id="catalog-grid"></div>
         </section>
         <noscript><p>Enable JavaScript to try personalization.</p></noscript>
@@ -45,24 +45,23 @@
     <button type="button" class="pcx-guide-open pcx-guide-launcher" aria-controls="pcx-demo-guide" aria-expanded="false" disabled>Demo guide</button>
     <section id="pcx-demo-guide" class="pcx-demo-guide" popover="manual" aria-labelledby="pcx-guide-title" hidden>
       <div class="pcx-guide-header">
-        <h2 id="pcx-guide-title">See the store adapt to you</h2>
+        <h2 id="pcx-guide-title">Recommendations that adapt as you shop</h2>
         <button id="pcx-guide-close" type="button" aria-label="Close demo guide">&times;</button>
       </div>
-      <p>Choose a sample shopper. Try both GPU budgets to see how the same category gets different picks.</p>
-      <div class="pcx-guide-samples" role="group" aria-label="Sample browsing">
-        {% for shopper in sampleShoppers %}
-          <button type="button" data-action="replay" data-id="{{ shopper.productId | escape }}" data-budget="{{ shopper.budgetPhp }}" disabled>{{ shopper.label | escape }}</button>
-        {% endfor %}
-      </div>
-      <label class="pcx-guide-consent"><input type="checkbox" id="allow-personalization" disabled> Use my browsing in this demo</label>
-      <div class="pcx-guide-samples">
-        <button type="button" data-action="browse" data-target="sample-catalog" disabled>Browse products</button>
-        <button type="button" data-action="browse" data-target="personalization-demo" disabled>See Home picks</button>
-      </div>
-      <div class="pcx-guide-footer">
-        <p id="pcx-guide-result" role="status">Showing Bestsellers</p>
+      <p>Search, open a product or add it to your cart. Return home to see picks based on what you did.</p>
+      <div class="pcx-guide-actions">
+        <button type="button" class="pcx-guide-browse" data-action="browse" data-target="sample-catalog" disabled>Browse products</button>
         <button id="reset-session" type="button" disabled>Reset demo</button>
       </div>
+      <details class="pcx-guide-examples">
+        <summary>Try a sample shopper</summary>
+        <div class="pcx-guide-samples" role="group" aria-label="Sample shoppers">
+          {% for shopper in sampleShoppers %}
+            <button type="button" data-action="replay" data-id="{{ shopper.productId | escape }}" data-budget="{{ shopper.budgetPhp }}" disabled>{{ shopper.label | escape }}</button>
+          {% endfor %}
+        </div>
+      </details>
+      <p class="pcx-guide-privacy">Your activity stays in this tab and clears when you reload.</p>
     </section>
     <footer id="pcx-preview-info" class="pcx-footer"><div class="shell">
       <img src="{{ logo | asset_url }}" alt="PC Express" width="162" height="36" loading="lazy">
