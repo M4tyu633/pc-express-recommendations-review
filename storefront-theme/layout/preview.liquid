@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en-PH">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>PC Express | Personalization preview</title>
+    <link rel="stylesheet" href="/preview.css">
+    <link rel="stylesheet" href="/pcx-storefront.css">
+    <script type="module" src="/preview.js"></script>
+  </head>
+  <body class="pcx-preview">
+    {% render 'pcx-header', logo: logo, categories: categories %}
+    <main id="MainContent">
+      <div id="home-content">
+        {% render 'pcx-home', hero: hero, hero_mobile: hero_mobile, categories: categories %}
+      </div>
+      <div class="shell preview-content">
+        <section class="preview-controls" aria-label="Preview controls">
+          <div class="session">
+            <label><input type="checkbox" id="allow-personalization" disabled> Allow personalization</label>
+            <button id="reset-session" type="button" disabled>Reset demo</button>
+          </div>
+          <div class="sample-replay" role="group" aria-label="Sample browsing">
+            <span>Try browsing</span>
+            <button type="button" data-action="replay" data-id="gpu-mid" disabled>Graphics cards</button>
+            <button type="button" data-action="replay" data-id="audio-usb" disabled>Headsets</button>
+          </div>
+        </section>
+        <p id="preview-status" role="status">Loading the demo catalog…</p>
+        <div id="page-context"></div>
+        <div id="placements">{{ recommendations }}</div>
+        <section class="sample-catalog" id="sample-catalog" aria-labelledby="catalog-heading">
+          <h2 id="catalog-heading">Featured Products</h2>
+          <div class="product-grid" id="catalog-grid"></div>
+        </section>
+        <noscript><p>Enable JavaScript to try personalization.</p></noscript>
+      </div>
+    </main>
+    <footer class="pcx-footer"><div class="shell">
+      <img src="{{ logo | asset_url }}" alt="PC Express" width="162" height="36" loading="lazy">
+      <p>Storefront demo. Prices are a catalog snapshot and the cart is simulated.</p>
+      {% if operations %}<a href="/operations.html">Campaign operations</a>{% endif %}
+    </div></footer>
+    {% for product in products %}
+      <template id="pcx-card-{{ product.id | escape }}">{% render 'pcx-product-card', product: product, actions: true %}</template>
+    {% endfor %}
+  </body>
+</html>

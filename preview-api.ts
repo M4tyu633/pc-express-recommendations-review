@@ -7,6 +7,8 @@ const engine = createPlacementEngine(previewCatalog);
 const publicCatalog = previewCatalog.filter(product => product.published).map(product => ({
   id: product.id,
   name: product.name,
+  vendor: product.vendor,
+  image: product.image,
   category: product.category,
   kind: product.kind,
   description: product.description,

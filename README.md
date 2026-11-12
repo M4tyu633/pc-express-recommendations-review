@@ -1,6 +1,10 @@
 # PC Express storefront personalization preview
 
-Run `npm start` with Node.js 24 and open [the storefront preview](http://127.0.0.1:4173/preview). It uses a fictional catalog and supports Home, Product, Search results and Cart. Turn on personalization, open the Vector G5 graphics card, add it to the cart, then return Home. The homepage recommends other available graphics cards. Cart shows curated accessories. Turn personalization off to clear browsing history.
+Run `npm ci` and `npm start` with Node.js 24, then open [the storefront preview](http://127.0.0.1:4173/preview). It uses a snapshot of public PC Express products and supports Home, Product, Search results and Cart. Turn on personalization and choose Graphics cards or Headsets in the browsing controls. The homepage recommends products based on the simulated activity. Turn personalization off to clear browsing history.
+
+The page renders from Shopify-style Liquid layout and snippet files under `storefront-theme/`. It uses the real PC Express logo, campaign banner, category artwork and product photos. The source list is in `storefront-theme/assets-source.json`. The preview uses LiquidJS to render those files on Vercel, with simulated inventory, popularity, cart and consent. Checkout and tracking are disconnected.
+
+After opting in, use the sample browsing buttons to replay a graphics-card or headset view. Each replay replaces the demo browsing history and keeps the current cart.
 
 The preview reuses the twelve observed storefront placement IDs (`home_recommendations_1` to `_3`, with corresponding `pdp`, `srp` and `cart` prefixes) and adapts the theme's card pattern. Home shows session recommendations and top sellers. Product pages use sample co-purchases and similar items. Search shows relevant sample products, and Cart shows curated pairings and top sellers. Empty slots are hidden. Products that are sold out, unpublished, already in the cart or the currently viewed product are excluded where applicable.
 

@@ -37,6 +37,8 @@ h2 { font-size: clamp(1.18rem, 2.25vw, 1.56rem); letter-spacing: -.025em; }
 .nav { display: flex; gap: 1.2rem; align-items: center; }
 .nav button { border: 0; border-radius: 0; padding: .6rem .1rem; background: transparent; color: var(--muted); border-bottom: 2px solid transparent; font-size: .9rem; }
 .nav button[aria-current="page"] { border-bottom-color: var(--accent); color: var(--ink); }
+.nav .operations-link { margin-left: auto; padding: .6rem 0; color: var(--muted); text-decoration: none; font-size: .9rem; }
+.nav .operations-link:hover, .nav .operations-link:focus-visible { color: var(--ink); text-decoration: underline; }
 main { padding: 1.5rem 0 4rem; }
 .hero {
   display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1.4rem;
@@ -51,6 +53,9 @@ main { padding: 1.5rem 0 4rem; }
 .session label { min-height: 42px; display: flex; gap: .35rem; align-items: center; font-size: .88rem; }
 .session input { accent-color: var(--accent); width: 17px; height: 17px; }
 .session button { font-size: .85rem; }
+.sample-replay { display: flex; align-items: center; flex-wrap: wrap; gap: .55rem; margin-top: .8rem; }
+.sample-replay span { color: var(--muted); font-size: .86rem; }
+.sample-replay button { min-height: 36px; padding: .4rem .7rem; font-size: .83rem; }
 #preview-status { min-height: 22px; margin: .78rem 0 1.2rem; font-size: .9rem; }
 .placement, .context, .sample-catalog { margin-bottom: 1.9rem; }
 .placement h2, .sample-catalog h2, .context h2 { margin-bottom: .85rem; }
@@ -99,6 +104,8 @@ main { padding: 1.5rem 0 4rem; }
   .search-form { grid-column: 1 / -1; grid-row: 2; width: 100%; }
   .nav { gap: .68rem; }
   .nav button { font-size: .8rem; }
+  .nav { flex-wrap: wrap; }
+  .nav .operations-link { font-size: .8rem; }
   .hero { align-items: flex-start; }
   .product-art { height: 94px; }
   .product-grid { gap: .6rem; }

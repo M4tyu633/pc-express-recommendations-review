@@ -1,0 +1,31 @@
+<div class="announcement-bar">PC Express storefront preview</div>
+<header class="site-header" id="shopify-section-header-categories-menu">
+  <div class="shell t4s-header__wrapper header-main">
+    <button type="button" class="brand t4s-header__logo" data-action="navigate" data-surface="home" disabled aria-label="PC Express home">
+      <img src="{{ logo | asset_url }}" alt="PC Express" width="225" height="50">
+    </button>
+    <form id="search-form" class="search-form" role="search">
+      <label class="sr-only" for="search-query">Search for products</label>
+      <input id="search-query" type="search" maxlength="80" placeholder="Search for products" disabled>
+      <button type="submit" aria-label="Search" disabled><span class="search-icon" aria-hidden="true"></span></button>
+    </form>
+    <button type="button" class="cart-control" data-action="navigate" data-surface="cart" disabled>Cart <span id="cart-count">0</span></button>
+  </div>
+  <div class="pcx-menu">
+    <div class="shell nav">
+      <details class="pcx-categories">
+        <summary><span aria-hidden="true">☰</span> All Products <span aria-hidden="true">⌄</span></summary>
+        <div class="pcx-category-menu">
+          {% for category in categories %}
+            <button type="button" data-action="category" data-query="{{ category.query | escape }}" disabled>{{ category.label | escape }}</button>
+          {% endfor %}
+        </div>
+      </details>
+      <nav class="t4s-nav-ul" aria-label="Store categories">
+        {% for category in categories %}
+          <button type="button" data-action="category" data-query="{{ category.query | escape }}" disabled>{{ category.label | escape }}</button>
+        {% endfor %}
+      </nav>
+    </div>
+  </div>
+</header>

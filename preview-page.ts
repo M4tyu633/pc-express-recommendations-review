@@ -1,17 +1,36 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { Liquid } from "liquidjs";
 import { renderPlacements } from "./public/preview/cards.js";
 import { initialPlacements } from "./preview-api.ts";
 import { previewCatalog } from "./preview-catalog.ts";
+import { storefront } from "./pcx-storefront-data.ts";
 
 const assetsDirectory = new URL("./public/preview/", import.meta.url);
-const page = readFileSync(new URL("index.html", assetsDirectory), "utf8")
-  .replace("<!-- PREVIEW_FALLBACK -->", () => renderPlacements(
+const theme = new URL("./storefront-theme/", import.meta.url);
+const engine = new Liquid({ root: fileURLToPath(new URL("snippets/", theme)), extname: ".liquid" });
+engine.registerFilter("asset_url", (filename: string) => "/pcx-assets/" + encodeURIComponent(filename));
+engine.registerFilter("money", (cents: number) => new Intl.NumberFormat("en-PH", {
+  style: "currency", currency: "PHP",
+}).format(cents / 100));
+const renderCard = (product: object, detail: string) =>
+  engine.renderFileSync("pcx-product-card", { product, detail, actions: false });
+const page = engine.parseAndRenderSync(readFileSync(new URL("layout/preview.liquid", theme), "utf8"), {
+  logo: storefront.logo,
+  hero: storefront.hero,
+  hero_mobile: storefront.heroMobile,
+  categories: storefront.categories,
+  products: previewCatalog.filter(product => product.published),
+  operations: existsSync(new URL("operations.html", assetsDirectory)),
+  recommendations: renderPlacements(
     "home", initialPlacements(), new Map(previewCatalog.map(product => [product.id, product])),
-  ));
+    new Set(), false, renderCard,
+  ),
+});
 
 export const previewPage = page;
 
-export const previewAssets = new Map([
+export const previewAssets = new Map<string, { contentType: string; body: string | Buffer }>([
   ["/preview", { contentType: "text/html; charset=utf-8", body: page }],
   ["/preview.css", {
     contentType: "text/css; charset=utf-8",
@@ -25,4 +44,23 @@ export const previewAssets = new Map([
     contentType: "text/javascript; charset=utf-8",
     body: readFileSync(new URL("cards.js", assetsDirectory), "utf8"),
   }],
+  ...Object.entries({
+    "operations.html": "text/html",
+    "operations.css": "text/css",
+    "operations.js": "text/javascript",
+    "operations-data.js": "text/javascript",
+    "pcx-storefront.css": "text/css",
+  }).filter(([filename]) => existsSync(new URL(filename, assetsDirectory))).map(([filename, type]) => [
+    "/" + filename, {
+      contentType: type + "; charset=utf-8",
+      body: readFileSync(new URL(filename, assetsDirectory), "utf8"),
+    },
+  ] as const),
+  ...readdirSync(new URL("assets/", theme)).map(filename => [
+    "/pcx-assets/" + filename,
+    {
+      contentType: filename.endsWith(".png") ? "image/png" : "image/jpeg",
+      body: readFileSync(new URL("assets/" + filename, theme)),
+    },
+  ] as const),
 ]);

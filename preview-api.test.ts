@@ -42,6 +42,8 @@ test("preview API rejects bad contexts, cross-site requests and oversized payloa
 test("staged HTML has no third-party resources and includes an anonymous row without JavaScript", () => {
   assert.match(previewPage, /id="home_recommendations_1"/);
   assert.match(previewPage, /Bestsellers/);
-  assert.match(previewPage, /Arc M2 Wireless Mouse/);
+  assert.match(previewPage, /LOGITECH B175 USB Wireless Mouse/);
+  assert.match(previewPage, /src="\/pcx-assets\/mouse\.jpg"/);
+  assert.match(previewPage, /src="\/pcx-assets\/pcx-logo\.png"/);
   assert.doesNotMatch(previewPage, /(?:src|href|action)=["'](?:https?:)?\/\//i);
 });

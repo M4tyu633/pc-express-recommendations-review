@@ -12,6 +12,8 @@ const pageContext = document.querySelector("#page-context");
 const slots = document.querySelector("#placements");
 const cartCount = document.querySelector("#cart-count");
 const nav = document.querySelector(".nav");
+const replayButtons = document.querySelectorAll('[data-action="replay"]');
+const homeContent = document.querySelector("#home-content");
 
 const events = [];
 const cart = new Set();
@@ -25,6 +27,7 @@ let pendingRequest;
 
 function showContext(searchMatches = null) {
   catalogSection.hidden = surface !== "home";
+  if (homeContent) homeContent.hidden = surface !== "home";
   cartCount.textContent = String(cart.size);
   for (const button of nav.querySelectorAll("button")) {
     if (button.dataset.surface === surface) button.setAttribute("aria-current", "page");
@@ -42,7 +45,7 @@ function showContext(searchMatches = null) {
       if (!product) break;
       const action = cart.has(product.id) ? "Remove from cart" : "Add to cart";
       pageContext.innerHTML = `<section class="context detail-view" aria-label="Product detail">
-        ${productArt(product.kind)}
+        ${productArt(product)}
         <div>
           <h2>${escapeHtml(product.name)}</h2>
           <p class="muted">${escapeHtml(product.description)}</p>
@@ -125,6 +128,10 @@ function record(type, productId) {
   if (events.length > 100) events.shift();
 }
 
+function updateReplayButtons() {
+  for (const button of replayButtons) button.disabled = !consent.checked;
+}
+
 function view(id) {
   const product = catalog.get(id);
   if (!product) return;
@@ -148,8 +155,19 @@ document.addEventListener("click", event => {
     void refresh(surface === "home" && consent.checked
       ? "Suggestions adapt to what you view and add in this session."
       : "Showing recommendations for this page.");
+  } else if (action === "category") {
+    query = button.dataset.query;
+    searchBox.value = query;
+    surface = "search";
+    button.closest("details")?.removeAttribute("open");
+    void refresh(`Searching for ${query}.`);
   } else if (action === "view") {
     view(id);
+  } else if (action === "replay" && consent.checked && catalog.has(id)) {
+    events.length = 0;
+    surface = "home";
+    record("product_viewed", id);
+    void refresh("Replayed a sample view for " + catalog.get(id).name + ".");
   } else if (action === "cart") {
     const product = catalog.get(id);
     if (!product?.inStock) return;
@@ -182,8 +200,9 @@ searchForm.addEventListener("submit", event => {
 
 consent.addEventListener("change", () => {
   if (!consent.checked) events.length = 0;
+  updateReplayButtons();
   void refresh(consent.checked
-    ? "Personalization is on. View a product, then return Home to see the change."
+    ? "Personalization is on. Replay sample browsing or view a product."
     : "Personalization is off. Browsing activity was cleared.");
 });
 
@@ -191,6 +210,7 @@ reset.addEventListener("click", () => {
   events.length = 0;
   cart.clear();
   consent.checked = false;
+  updateReplayButtons();
   searchBox.value = "";
   query = "graphics cards";
   selectedProduct = "gpu-mid";
@@ -207,6 +227,7 @@ async function initialize() {
     anonymousRows = data.placements;
     consent.checked = false;
     for (const control of controls) control.disabled = false;
+    updateReplayButtons();
     showContext();
     slots.innerHTML = renderPlacements("home", anonymousRows, catalog, cart, true);
     status.textContent = "Choose a product or allow personalization to try a shopper session.";

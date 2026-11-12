@@ -8,10 +8,12 @@ import {
 } from "./engine.ts";
 
 export type Surface = "home" | "product" | "search" | "cart";
-export type ProductKind = "gpu" | "headset" | "keyboard" | "mouse" | "monitor" | "power";
+export type ProductKind = "gpu" | "headset" | "keyboard" | "mouse" | "monitor" | "power" | "desktop" | "laptop";
 
 export interface PreviewProduct extends Product {
   kind: ProductKind;
+  vendor?: string;
+  image?: string;
   description: string;
   published: boolean;
   addedAtMs: number;

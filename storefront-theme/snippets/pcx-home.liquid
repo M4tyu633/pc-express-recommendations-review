@@ -1,0 +1,18 @@
+<section class="shell t4s-slideshow" aria-label="Featured at PC Express">
+  <button type="button" class="pcx-banner" data-action="category" data-query="laptops" disabled aria-label="Browse laptops">
+    <picture>
+      <source media="(max-width: 600px)" srcset="{{ hero_mobile | asset_url }}">
+      <img src="{{ hero | asset_url }}" alt="Windows 11 PCs with Intel Inside" width="1440" height="480" fetchpriority="high">
+    </picture>
+  </button>
+</section>
+<section class="shell pcx-category-section" aria-labelledby="categories-heading">
+  <h2 id="categories-heading">Shop by Category</h2>
+  <div class="pcx-category-grid">
+    {% for category in categories %}
+      <button type="button" data-action="category" data-query="{{ category.query | escape }}" disabled aria-label="{{ category.label | escape }}">
+        <img src="{{ category.image | asset_url }}" alt="{{ category.label | escape }}" width="350" height="350" loading="lazy">
+      </button>
+    {% endfor %}
+  </div>
+</section>

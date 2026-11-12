@@ -1,0 +1,25 @@
+<article class="t4s-product" data-product-id="{{ product.id | escape }}">
+  <div class="t4s-product-wrapper">
+    <div class="t4s-product-inner">
+      <div class="t4s-product-img">
+        <img src="{{ product.image | asset_url }}" alt="{{ product.name | escape }}" width="480" height="480" loading="lazy">
+      </div>
+      {% unless product.inStock %}<span class="stock-label">Sold out</span>{% endunless %}
+    </div>
+    <div class="t4s-product-info">
+      <div class="t4s-product-info__inner">
+        <span class="t4s-product-vendor">{{ product.vendor | escape }}</span>
+        <h3 class="t4s-product-title">
+          {% if actions %}<button type="button" class="product-link" data-action="view" data-id="{{ product.id | escape }}">{{ product.name | escape }}</button>
+          {% else %}{{ product.name | escape }}{% endif %}
+        </h3>
+        <p class="t4s-product-price">{{ product.pricePhp | times: 100 | money }}</p>
+        {% if detail %}<p class="product-detail">{{ detail | escape }}</p>{% else %}<p class="product-detail" hidden></p>{% endif %}
+        {% if actions %}
+          <button type="button" class="card-action" data-action="cart" data-id="{{ product.id | escape }}"
+            aria-label="Add to cart: {{ product.name | escape }}"{% unless product.inStock %} disabled{% endunless %}>Add to cart</button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</article>

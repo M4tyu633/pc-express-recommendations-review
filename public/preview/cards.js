@@ -13,10 +13,10 @@ export function formatPrice(price) {
   return currency.format(price);
 }
 
-export function productArt(kind) {
-  return `<div class="t4s-product-img product-art" data-kind="${escapeHtml(kind)}" aria-hidden="true">
-    <span class="hardware"></span>
-  </div>`;
+export function productArt(product) {
+  if (!product.image) return "";
+  return `<div class="t4s-product-img product-art"><img src="/pcx-assets/${encodeURIComponent(product.image)}"
+    alt="${escapeHtml(product.name)}" width="480" height="480"></div>`;
 }
 
 export function productCard(product, detail, cart = new Set(), actions = false) {
@@ -24,10 +24,21 @@ export function productCard(product, detail, cart = new Set(), actions = false) 
   const name = escapeHtml(product.name);
   const inCart = cart.has(product.id);
   const cartLabel = inCart ? "Remove" : "Add to cart";
+  const template = typeof document !== "undefined" && document.getElementById("pcx-card-" + product.id);
+  if (template) {
+    const card = template.content.firstElementChild.cloneNode(true);
+    const reason = card.querySelector(".product-detail");
+    reason.textContent = detail;
+    reason.hidden = !detail;
+    const button = card.querySelector('[data-action="cart"]');
+    button.textContent = cartLabel;
+    button.setAttribute("aria-label", `${cartLabel}: ${product.name}`);
+    return card.outerHTML;
+  }
   return `<article class="t4s-product" data-product-id="${id}">
     <div class="t4s-product-wrapper">
       <div class="t4s-product-inner">
-        ${productArt(product.kind)}
+        ${productArt(product)}
         ${product.inStock ? "" : '<span class="stock-label">Sold out</span>'}
       </div>
       <div class="t4s-product-info">
@@ -45,7 +56,7 @@ export function productCard(product, detail, cart = new Set(), actions = false) 
   </article>`;
 }
 
-export function renderPlacements(surface, placements, catalog, cart = new Set(), actions = false) {
+export function renderPlacements(surface, placements, catalog, cart = new Set(), actions = false, renderCard = productCard) {
   const rows = new Map(placements.map(row => [row.id, row]));
   return [1, 2, 3].map(slot => {
     const id = `${prefixes[surface]}_recommendations_${slot}`;
@@ -53,11 +64,11 @@ export function renderPlacements(surface, placements, catalog, cart = new Set(),
     if (!row) return `<section id="${id}" hidden></section>`;
     const cards = row.items.flatMap(item => {
       const product = catalog.get(item.productId);
-      return product?.inStock && !cart.has(product.id) ? [productCard(product, item.reason, cart, actions)] : [];
+      return product?.inStock && !cart.has(product.id) ? [renderCard(product, item.reason, cart, actions)] : [];
     });
     if (!cards.length) return `<section id="${id}" hidden></section>`;
     return `<section id="${id}" class="placement" aria-labelledby="${id}_heading">
-      <h2 id="${id}_heading">${escapeHtml(row.title)}</h2>
+      <h2 id="${id}_heading">${escapeHtml(row.title === "Recommended for you" ? "Recommended For You" : row.title)}</h2>
       <div class="product-grid">${cards.join("")}</div>
     </section>`;
   }).join("");
