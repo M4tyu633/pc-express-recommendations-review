@@ -1,0 +1,14 @@
+{
+  "name": "pc-express-recommendations",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "demo": "node demo.ts",
+    "build": "node build-preview.ts",
+    "start": "node server.ts",
+    "test": "node --test"
+  }
+}

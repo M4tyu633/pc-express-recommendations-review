@@ -1,0 +1,131 @@
+:root {
+  color-scheme: dark;
+  font: 16px/1.5 Inter, system-ui, sans-serif;
+  background: #141414;
+  color: #f4f4f4;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2rem clamp(1rem, 5vw, 3rem);
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+}
+
+header p,
+#activity,
+.product-detail {
+  color: #bdbdbd;
+}
+
+header p {
+  margin-top: 0.5rem;
+}
+
+.controls,
+.product-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.controls {
+  margin-top: 1.25rem;
+}
+
+.controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.controls p {
+  margin-left: auto;
+}
+
+button {
+  background: #222;
+  color: inherit;
+  border: 1px solid #666;
+  border-radius: 0.25rem;
+  padding: 0.4rem 0.65rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+#activity {
+  margin: 0.6rem 0 1.25rem;
+}
+
+.storefront {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 1.5rem;
+}
+
+.cards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.cards li {
+  border: 1px solid #474747;
+  padding: 0.85rem;
+  background: #1b1b1b;
+}
+
+.product-name {
+  font-weight: 650;
+}
+
+.product-detail {
+  font-size: 0.875rem;
+}
+
+.product-actions {
+  margin-top: 0.55rem;
+}
+
+#catalog {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+}
+
+@media (max-width: 48rem) {
+  .storefront {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

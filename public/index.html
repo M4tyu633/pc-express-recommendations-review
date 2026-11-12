@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PC Express recommendation demo</title>
+    <link rel="stylesheet" href="/demo.css">
+    <script type="module" src="/demo.js"></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>PC Express recommendation demo</h1>
+        <p>Sample data. Allow personalization to see how product views and cart activity change the suggestions.</p>
+      </header>
+
+      <div class="controls">
+        <label><input type="checkbox" id="personalization" autocomplete="off" disabled> Allow personalization</label>
+        <button type="button" id="reset" disabled>Reset demo</button>
+        <p id="cart-count">Cart (0)</p>
+      </div>
+      <p id="activity" role="status">Loading the sample catalog…</p>
+
+      <div class="storefront">
+        <section class="recommendations" aria-labelledby="recommendation-heading" aria-live="polite">
+          <h2 id="recommendation-heading">Bestsellers</h2>
+          <ul id="recommended-products" class="cards">
+            <!-- BESTSELLERS -->
+          </ul>
+          <p id="empty-recommendations" hidden>No suggestions available.</p>
+        </section>
+
+        <section aria-labelledby="catalog-heading">
+          <h2 id="catalog-heading">Sample catalog</h2>
+          <ul id="catalog" class="cards"></ul>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
