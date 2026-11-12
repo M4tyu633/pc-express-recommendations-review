@@ -13,7 +13,7 @@
     {% render 'pcx-header', logo: logo, categories: categories %}
     <main id="MainContent">
       <div id="home-content">
-        {% render 'pcx-home', hero: hero, hero_mobile: hero_mobile, categories: categories %}
+        {% render 'pcx-home', slides: slides, categories: categories %}
       </div>
       <div class="shell preview-content">
         <section class="preview-controls" aria-label="Preview controls">
@@ -37,7 +37,7 @@
         <noscript><p>Enable JavaScript to try personalization.</p></noscript>
       </div>
     </main>
-    <footer class="pcx-footer"><div class="shell">
+    <footer id="pcx-preview-info" class="pcx-footer"><div class="shell">
       <img src="{{ logo | asset_url }}" alt="PC Express" width="162" height="36" loading="lazy">
       <p>Storefront demo. Prices are a catalog snapshot and the cart is simulated.</p>
       {% if operations %}<a href="/operations.html">Campaign operations</a>{% endif %}

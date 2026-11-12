@@ -1,10 +1,22 @@
-<section class="shell t4s-slideshow" aria-label="Featured at PC Express">
-  <button type="button" class="pcx-banner" data-action="category" data-query="laptops" disabled aria-label="Browse laptops">
-    <picture>
-      <source media="(max-width: 600px)" srcset="{{ hero_mobile | asset_url }}">
-      <img src="{{ hero | asset_url }}" alt="Windows 11 PCs with Intel Inside" width="1440" height="480" fetchpriority="high">
-    </picture>
-  </button>
+<section class="shell t4s-slideshow" aria-label="Featured at PC Express" data-carousel>
+  <div class="pcx-slide-track">
+    {% for slide in slides %}
+      <button type="button" class="pcx-banner" data-action="category" data-query="{{ slide.query | escape }}" disabled aria-label="{{ slide.label | escape }}">
+        <picture>
+          <source media="(max-width: 600px)" srcset="{{ slide.mobile | asset_url }}">
+          <img src="{{ slide.desktop | asset_url }}" alt="{{ slide.label | escape }}" width="1440" height="480"
+            {% if forloop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}>
+        </picture>
+      </button>
+    {% endfor %}
+  </div>
+  <button type="button" class="pcx-slide-arrow pcx-slide-prev" aria-label="Previous promotion">‹</button>
+  <button type="button" class="pcx-slide-arrow pcx-slide-next" aria-label="Next promotion">›</button>
+  <div class="pcx-slide-dots" role="group" aria-label="Choose a promotion">
+    {% for slide in slides %}
+      <button type="button" class="pcx-slide-dot" aria-label="Show {{ slide.label | escape }}"{% if forloop.first %} aria-current="true"{% endif %}></button>
+    {% endfor %}
+  </div>
 </section>
 <section class="shell pcx-category-section" aria-labelledby="categories-heading">
   <h2 id="categories-heading">Shop by Category</h2>

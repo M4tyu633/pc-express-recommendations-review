@@ -1,4 +1,5 @@
 import { escapeHtml, formatPrice, productArt, productCard, renderPlacements } from "./cards.js";
+import { initCarousel } from "./pcx-carousel.js";
 
 const controls = document.querySelectorAll("button[disabled], input[disabled]");
 const consent = document.querySelector("#allow-personalization");
@@ -14,6 +15,7 @@ const cartCount = document.querySelector("#cart-count");
 const nav = document.querySelector(".nav");
 const replayButtons = document.querySelectorAll('[data-action="replay"]');
 const homeContent = document.querySelector("#home-content");
+initCarousel(document.querySelector("[data-carousel]"));
 
 const events = [];
 const cart = new Set();
@@ -161,6 +163,10 @@ document.addEventListener("click", event => {
     surface = "search";
     button.closest("details")?.removeAttribute("open");
     void refresh(`Searching for ${query}.`);
+  } else if (action === "browse") {
+    surface = "home";
+    void refresh("Showing the demo storefront.");
+    document.getElementById(button.dataset.target)?.scrollIntoView({ block: "start" });
   } else if (action === "view") {
     view(id);
   } else if (action === "replay" && consent.checked && catalog.has(id)) {

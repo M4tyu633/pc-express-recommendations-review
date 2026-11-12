@@ -14,6 +14,7 @@ export interface PreviewProduct extends Product {
   kind: ProductKind;
   vendor?: string;
   image?: string;
+  hoverImage?: string;
   description: string;
   published: boolean;
   addedAtMs: number;

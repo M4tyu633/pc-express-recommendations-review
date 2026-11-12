@@ -17,8 +17,7 @@ const renderCard = (product: object, detail: string) =>
   engine.renderFileSync("pcx-product-card", { product, detail, actions: false });
 const page = engine.parseAndRenderSync(readFileSync(new URL("layout/preview.liquid", theme), "utf8"), {
   logo: storefront.logo,
-  hero: storefront.hero,
-  hero_mobile: storefront.heroMobile,
+  slides: storefront.slides,
   categories: storefront.categories,
   products: previewCatalog.filter(product => product.published),
   operations: existsSync(new URL("operations.html", assetsDirectory)),
@@ -50,6 +49,7 @@ export const previewAssets = new Map<string, { contentType: string; body: string
     "operations.js": "text/javascript",
     "operations-data.js": "text/javascript",
     "pcx-storefront.css": "text/css",
+    "pcx-carousel.js": "text/javascript",
   }).filter(([filename]) => existsSync(new URL(filename, assetsDirectory))).map(([filename, type]) => [
     "/" + filename, {
       contentType: type + "; charset=utf-8",

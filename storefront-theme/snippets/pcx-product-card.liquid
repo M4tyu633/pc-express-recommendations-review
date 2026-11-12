@@ -1,8 +1,11 @@
 <article class="t4s-product" data-product-id="{{ product.id | escape }}">
   <div class="t4s-product-wrapper">
     <div class="t4s-product-inner">
-      <div class="t4s-product-img">
+      <div class="t4s-product-img{% if product.hoverImage %} pcx-has-hover{% endif %}">
         <img src="{{ product.image | asset_url }}" alt="{{ product.name | escape }}" width="480" height="480" loading="lazy">
+        {% if product.hoverImage %}
+          <img class="pcx-product-hover" src="{{ product.hoverImage | asset_url }}" alt="" width="480" height="480" loading="lazy">
+        {% endif %}
       </div>
       {% unless product.inStock %}<span class="stock-label">Sold out</span>{% endunless %}
     </div>

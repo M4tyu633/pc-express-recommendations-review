@@ -16,7 +16,7 @@ function fixture(
 
 const graphics = "graphics cards";
 const headsets = "headsets";
-const gpuTerms = "gpu gpus video card graphics gaming";
+const gpuTerms = "gpu gpus video card graphics gaming pc components";
 export const previewCatalog: readonly PreviewProduct[] = [
   fixture("gpu-mid", "gpu", graphics, 18, 20, "GeForce RTX 5050 · 8 GB GDDR6", {
     keywords: gpuTerms, accessoryIds: ["psu-650", "monitor-fhd"],
@@ -38,8 +38,8 @@ export const previewCatalog: readonly PreviewProduct[] = [
   fixture("keyboard", "keyboard", "keyboards", 37, 12, "RGB gaming keyboard", { keywords: "gaming keyboard switches peripherals" }),
   fixture("monitor-fhd", "monitor", "monitors", 31, 19, "23.8 inches · 144 Hz · IPS", { keywords: "display screen gaming" }),
   fixture("monitor-qhd", "monitor", "monitors", 17, 3, "27 inches · 180 Hz", { keywords: "display screen gaming" }),
-  fixture("psu-650", "power", "power supplies", 22, 7, "650 W · 80 Plus Bronze", { keywords: "psu power supply" }),
-  fixture("psu-850", "power", "power supplies", 12, 2, "850 W · 80 Plus Gold", { keywords: "psu power supply" }),
+  fixture("psu-650", "power", "power supplies", 22, 7, "650 W · 80 Plus Bronze", { keywords: "psu power supply pc components" }),
+  fixture("psu-850", "power", "power supplies", 12, 2, "850 W · 80 Plus Gold", { keywords: "psu power supply pc components" }),
   fixture("desktop-ms", "desktop", "desktop pcs", 15, 9, "GeForce RTX 3050 · Intel Core i5", { keywords: "desktop computers pc" }),
   fixture("desktop-in", "desktop", "desktop pcs", 16, 8, "GeForce RTX 3050 · Intel Core i5", { keywords: "desktop computers pc" }),
   fixture("laptop-lenovo", "laptop", "laptops", 16, 7, "GeForce RTX 5060 · AMD Ryzen 7", { keywords: "laptop notebook gaming" }),

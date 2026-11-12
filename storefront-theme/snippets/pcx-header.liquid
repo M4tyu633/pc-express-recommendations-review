@@ -22,9 +22,24 @@
         </div>
       </details>
       <nav class="t4s-nav-ul" aria-label="Store categories">
-        {% for category in categories %}
-          <button type="button" data-action="category" data-query="{{ category.query | escape }}" disabled>{{ category.label | escape }}</button>
-        {% endfor %}
+        <button type="button" data-action="category" data-query="asus" disabled>Taiwan Excellence</button>
+        <button type="button" data-action="category" data-query="radeon" disabled>AMD</button>
+        <button type="button" data-action="category" data-query="asus" disabled>Powered by ASUS</button>
+        <button type="button" data-action="category" data-query="desktop" disabled>ASUS Agent Computer</button>
+        <button type="button" data-action="category" data-query="laptops" disabled>Laptops</button>
+        <button type="button" data-action="category" data-query="desktop" disabled>Mini PCs</button>
+        <button type="button" data-action="category" data-query="geforce" disabled>NVIDIA</button>
+        <button type="button" data-action="category" data-query="intel" disabled>Intel</button>
+        <button type="button" data-action="category" data-query="laptops" disabled>Microsoft</button>
+        <button type="button" data-action="category" data-query="lenovo" disabled>Lenovo</button>
+        <button type="button" data-action="category" data-query="msi" disabled>Powered by MSI</button>
+        <button type="button" data-action="category" data-query="monitor" disabled>Samsung Monitors</button>
+        <button type="button" data-action="category" data-query="desktop" disabled>Business Solutions</button>
+        <button type="button" data-action="browse" data-target="sample-catalog" disabled>Pricelists</button>
+        <button type="button" class="pcx-sale-link" data-action="category" data-query="laptops" disabled>Laptop Sale!</button>
+        <button type="button" data-action="browse" data-target="sample-catalog" disabled>Product Spotlight</button>
+        <button type="button" data-action="browse" data-target="home-content" disabled>News &amp; Promos</button>
+        <a href="#pcx-preview-info">Info</a>
       </nav>
     </div>
   </div>
