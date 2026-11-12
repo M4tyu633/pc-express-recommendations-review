@@ -5,7 +5,7 @@ const catalogDate = Date.UTC(2026, 10, 12);
 function fixture(
   id: string, name: string, kind: ProductKind, category: string, pricePhp: number,
   paidOrdersLast30Days: number, daysAgo: number, description: string,
-  options: Partial<Pick<PreviewProduct, "inStock" | "published" | "keywords" | "accessoryIds">> = {},
+  options: Partial<Pick<PreviewProduct, "inStock" | "published" | "keywords" | "accessoryIds" | "alsoBoughtIds">> = {},
 ): PreviewProduct {
   return {
     id, name, kind, category, pricePhp, paidOrdersLast30Days, description,
@@ -17,7 +17,10 @@ const graphics = "graphics cards";
 const headsets = "headsets";
 const gpuTerms = "gpu gpus video card graphics gaming";
 export const previewCatalog: readonly PreviewProduct[] = [
-  fixture("gpu-mid", "Vector G5 12GB Graphics Card", "gpu", graphics, 23500, 18, 20, "12 GB · Dual fan · PCIe 4.0", { keywords: gpuTerms, accessoryIds: ["psu-650", "monitor-fhd"] }),
+  fixture("gpu-mid", "Vector G5 12GB Graphics Card", "gpu", graphics, 23500, 18, 20, "12 GB · Dual fan · PCIe 4.0", {
+    keywords: gpuTerms, accessoryIds: ["psu-650", "monitor-fhd"],
+    alsoBoughtIds: ["monitor-fhd", "psu-650", "keyboard"],
+  }),
   fixture("gpu-compact", "Vector G4 8GB Compact Graphics Card", "gpu", graphics, 22900, 14, 1, "8 GB · Compact dual fan", { keywords: gpuTerms, accessoryIds: ["psu-650"] }),
   fixture("gpu-premium", "Vector G7 16GB Graphics Card", "gpu", graphics, 44500, 9, 8, "16 GB · Triple fan · PCIe 4.0", { keywords: gpuTerms, accessoryIds: ["psu-850"] }),
   fixture("gpu-entry", "Vector G3 6GB Graphics Card", "gpu", graphics, 14950, 13, 18, "6 GB · Dual fan", { keywords: gpuTerms, accessoryIds: ["psu-650"] }),

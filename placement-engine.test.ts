@@ -16,6 +16,7 @@ test("home switches by opted-in intent and ignores opted-out history", () => {
   const audio = engine.recommend({ ...base, events: [viewed("audio-usb")], personalizationAllowed: true }, now);
   assert.equal(gpu.placements[0].title, "Recommended for you");
   assert.equal(gpu.placements[0].items[0].productId, "gpu-compact");
+  assert.equal(gpu.placements.find(row => row.id === "home_recommendations_2")?.title, "Top Sellers");
   assert.ok(audio.placements[0].items.every(item => item.productId.startsWith("audio-")));
   assert.deepEqual(
     engine.recommend({ ...base, events: [viewed("gpu-mid")] }, now),
@@ -38,13 +39,18 @@ test("every placement excludes cart, unpublished and unavailable products withou
   }
 });
 
-test("product and cart use context and only curated complementary items", () => {
+test("product uses sample co-purchases and cart uses its curated pairings", () => {
   const product = engine.recommend({ ...base, surface: "product", productId: "gpu-mid" }, now);
   assert.equal(product.placements[0].id, "pdp_recommendations_1");
+  assert.equal(product.placements[0].title, "Customers Also Bought");
+  assert.deepEqual(product.placements[0].items.map(item => item.productId), ["monitor-fhd", "psu-650", "keyboard"]);
   assert.ok(!product.placements.flatMap(row => row.items).some(item => item.productId === "gpu-mid"));
   const cart = engine.recommend({ ...base, surface: "cart", cartProductIds: ["gpu-mid"] }, now);
   assert.equal(cart.placements[0].id, "cart_recommendations_1");
+  assert.equal(cart.placements[0].title, "Related Products");
   assert.deepEqual(cart.placements[0].items.map(item => item.productId), ["psu-650", "monitor-fhd"]);
+  const emptyCart = engine.recommend({ ...base, surface: "cart" }, now);
+  assert.deepEqual(emptyCart.placements.map(row => [row.id, row.title]), [["cart_recommendations_3", "Top Sellers"]]);
 });
 
 test("search ranks matching products and returns a safe fallback for an unknown query", () => {

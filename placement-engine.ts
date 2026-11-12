@@ -17,6 +17,7 @@ export interface PreviewProduct extends Product {
   addedAtMs: number;
   keywords?: string;
   accessoryIds?: readonly string[];
+  alsoBoughtIds?: readonly string[];
 }
 
 export interface PlacementInput {
@@ -85,7 +86,6 @@ export function createPlacementEngine(source: readonly PreviewProduct[]) {
   );
   const catalog = new Map(published.map(product => [product.id, product]));
   const bestsellers = [...catalog.values()].filter(product => product.inStock).sort(byPopularity);
-  const arrivals = [...bestsellers].sort((a, b) => b.addedAtMs - a.addedAtMs || byPopularity(a, b));
   const byCategory = new Map<string, PreviewProduct[]>();
   for (const product of bestsellers) {
     const category = byCategory.get(product.category) ?? [];
@@ -119,8 +119,8 @@ export function createPlacementEngine(source: readonly PreviewProduct[]) {
       );
   }
 
-  function complements(product: PreviewProduct) {
-    return (product.accessoryIds ?? []).slice(0, 8)
+  function relatedProducts(ids: readonly string[] = []) {
+    return ids.slice(0, 8)
       .map(id => catalog.get(id))
       .filter((item): item is PreviewProduct => item !== undefined);
   }
@@ -179,7 +179,7 @@ export function createPlacementEngine(source: readonly PreviewProduct[]) {
           nearPrice(byCategory.get(category) ?? [], interest.weightedPrice / interest.weight)
         );
         if (!add(1, "Recommended for you", rankIntent(candidates), intent, reserved)) defaults();
-        add(2, "Recently added", arrivals, () => "New to the catalog", reserved);
+        add(2, "Top Sellers", bestsellers, () => "Popular and available", reserved);
         viewed(3);
         break;
       }
@@ -188,8 +188,12 @@ export function createPlacementEngine(source: readonly PreviewProduct[]) {
           defaults();
           break;
         }
-        add(1, "Similar products", alternatives(product), () => "Same category and nearby price");
-        add(2, "Complete your setup", complements(product), () => "Curated pairing for this item");
+        if (add(1, "Customers Also Bought", relatedProducts(product.alsoBoughtIds),
+          () => "Bought together in the sample catalog")) {
+          add(2, "Similar products", alternatives(product), () => "Same category and nearby price");
+        } else {
+          add(1, "Similar products", alternatives(product), () => "Same category and nearby price");
+        }
         viewed(3);
         if (!placements.length) defaults();
         break;
@@ -210,12 +214,12 @@ export function createPlacementEngine(source: readonly PreviewProduct[]) {
         break;
       }
       case "cart": {
-        add(1, "Complete your setup", cart.flatMap(complements), () => "Curated pairing with a cart item");
+        add(1, "Related Products", cart.flatMap(item => relatedProducts(item.accessoryIds)),
+          () => "Curated pairing with a cart item");
         const anchors = [...new Map(cart.map(item => [item.category, item])).values()]
           .slice(0, MAX_CART_CATEGORIES);
         add(2, "More like your cart items", anchors.flatMap(alternatives), () => "Same category as a cart item");
-        viewed(3);
-        if (!placements.length) defaults();
+        add(3, "Top Sellers", bestsellers, () => "Popular and available");
         break;
       }
     }
