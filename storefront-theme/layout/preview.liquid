@@ -19,29 +19,10 @@
         <section class="preview-controls" id="personalization-demo" aria-labelledby="personalization-heading">
           <div class="preview-controls-copy">
             <h2 id="personalization-heading">Try personalization</h2>
-            <p>Turn it on, then choose a browsing example to see the recommendation row change.</p>
+            <p>Compare the same product row for three sample shoppers.</p>
           </div>
-          <div class="preview-controls-actions">
-            <div class="session">
-              <label><input type="checkbox" id="allow-personalization" disabled> Allow personalization</label>
-              <button id="reset-session" type="button" disabled>Reset demo</button>
-            </div>
-            <div class="sample-replay" role="group" aria-label="Sample browsing">
-              <span>Try browsing</span>
-              <button type="button" data-action="replay" data-id="gpu-mid" disabled>Graphics cards</button>
-              <button type="button" data-action="replay" data-id="audio-usb" disabled>Headsets</button>
-            </div>
-          </div>
+          <button type="button" class="pcx-guide-open" aria-controls="pcx-demo-guide" aria-expanded="false" disabled>Open demo guide</button>
         </section>
-        <details class="pcx-presenter-guide">
-          <summary>Presenter guide</summary>
-          <ol>
-            <li>Start with personalization off and point out the <strong>Bestsellers</strong> row.</li>
-            <li>Allow personalization, then choose <strong>Graphics cards</strong>. Point out <strong>Recommended For You</strong> and the reason beneath each product.</li>
-            <li>Choose <strong>Headsets</strong> to show the same row adapting to a different shopper.</li>
-            <li>Turn personalization off to clear the sample activity and return to Bestsellers.</li>
-          </ol>
-        </details>
         <p id="preview-status" role="status">Loading the demo catalog…</p>
         <div id="page-context"></div>
         <div id="placements">{{ recommendations }}</div>
@@ -52,6 +33,29 @@
         <noscript><p>Enable JavaScript to try personalization.</p></noscript>
       </div>
     </main>
+    <button type="button" class="pcx-guide-open pcx-guide-launcher" aria-controls="pcx-demo-guide" aria-expanded="false" disabled>Demo guide</button>
+    <section id="pcx-demo-guide" class="pcx-demo-guide" popover="manual" aria-labelledby="pcx-guide-title">
+      <div class="pcx-guide-header">
+        <h2 id="pcx-guide-title">How personalization works</h2>
+        <button id="pcx-guide-close" type="button" aria-label="Close demo guide">&times;</button>
+      </div>
+      <p>Start with <strong>Bestsellers</strong>. Everyone sees these picks before sharing browsing activity.</p>
+      <label class="pcx-guide-consent"><input type="checkbox" id="allow-personalization" disabled> Allow personalization</label>
+      <p>Try both browsing examples. Watch the <strong>Recommended For You</strong> row change and read the reason under each product.</p>
+      <div class="pcx-guide-samples" role="group" aria-label="Sample browsing">
+        <button type="button" data-action="replay" data-id="gpu-mid" disabled>Graphics cards</button>
+        <button type="button" data-action="replay" data-id="audio-usb" disabled>Headsets</button>
+      </div>
+      <p>For your own test, open any product from the catalog or use search, then check your Home picks.</p>
+      <div class="pcx-guide-samples">
+        <button type="button" data-action="browse" data-target="sample-catalog" disabled>Browse the catalog</button>
+        <button type="button" data-action="browse" data-target="personalization-demo" disabled>See Home picks</button>
+      </div>
+      <div class="pcx-guide-footer">
+        <p id="pcx-guide-result" role="status">Showing Bestsellers</p>
+        <button id="reset-session" type="button" disabled>Reset demo</button>
+      </div>
+    </section>
     <footer id="pcx-preview-info" class="pcx-footer"><div class="shell">
       <img src="{{ logo | asset_url }}" alt="PC Express" width="162" height="36" loading="lazy">
       <p>Storefront demo. Prices are a catalog snapshot and the cart is simulated.</p>

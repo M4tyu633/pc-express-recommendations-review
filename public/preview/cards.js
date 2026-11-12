@@ -67,8 +67,12 @@ export function renderPlacements(surface, placements, catalog, cart = new Set(),
       return product?.inStock && !cart.has(product.id) ? [renderCard(product, item.reason, cart, actions)] : [];
     });
     if (!cards.length) return `<section id="${id}" hidden></section>`;
+    const personalized = surface === "home" && row.title === "Recommended for you";
     return `<section id="${id}" class="placement" aria-labelledby="${id}_heading">
-      <h2 id="${id}_heading">${escapeHtml(row.title === "Recommended for you" ? "Recommended For You" : row.title)}</h2>
+      <div class="pcx-placement-heading">
+        <h2 id="${id}_heading">${escapeHtml(personalized ? "Recommended For You" : row.title)}</h2>
+        ${personalized ? '<span class="pcx-personalized-label">Personalized for this session</span>' : ""}
+      </div>
       <div class="product-grid">${cards.join("")}</div>
     </section>`;
   }).join("");

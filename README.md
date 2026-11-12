@@ -6,11 +6,34 @@ The page renders from Shopify-style Liquid layout and snippet files under `store
 
 After opting in, use the sample browsing buttons to replay a graphics-card or headset view. Each replay replaces the demo browsing history and keeps the current cart.
 
-To present the demo, open **Try personalization** from the red announcement bar, then open **Presenter guide**. Start with Bestsellers, choose Graphics cards after opting in, switch to Headsets, then turn personalization off. The displayed product reasons explain each change.
+Select **Try personalization** in the announcement bar to open the floating guide. Start with Bestsellers, choose Graphics cards after opting in, switch to Headsets, then turn personalization off. The guide stays open while you browse. Close it with the X or Escape and reopen it with **Demo guide**.
+
+To run your own scenario, allow personalization and use **Browse the catalog** or search. Open any product, add an available item to the sample cart and select **See Home picks** to compare the ranked products with Bestsellers. Try a different category or reset the session and repeat. The product reasons explain which activity influenced the picks.
 
 The preview reuses the twelve observed storefront placement IDs (`home_recommendations_1` to `_3`, with corresponding `pdp`, `srp` and `cart` prefixes) and adapts the theme's card pattern. Home shows session recommendations and top sellers. Product pages use sample co-purchases and similar items. Search shows relevant sample products, and Cart shows curated pairings and top sellers. Empty slots are hidden. Products that are sold out, unpublished, already in the cart or the currently viewed product are excluded where applicable.
 
-The page loads its fixtures and recommendations from `/api/preview` on its own origin. Anonymous fallback cards are built into the page, and a short deadline protects the UI when the API fails. Event history lives in the current page and is sent only with the demo's personalization switch on. The API validates and limits requests, builds its catalog and search indexes once per instance, scores price-near candidates for the strongest categories, and keeps personalized responses out of caches.
+The page starts with an embedded catalog and anonymous fallback cards. It updates suggestions through `/api/preview` on its own origin, with a short deadline when the API fails. Event history lives in the current page and is sent only with the demo's personalization switch on. The API validates and limits requests, builds its catalog and search indexes once per instance, scores price-near candidates for the strongest categories, and keeps personalized responses out of caches.
+
+Reviewers can also test without the storefront UI. Start the repo locally and call `GET /api/preview` for the fixture catalog, then send a request of your own. In PowerShell:
+
+```powershell
+$preview = 'http://127.0.0.1:4173/api/preview'
+$inputBody = @{
+  surface = 'home'
+  personalizationAllowed = $true
+  cartProductIds = @('gpu-mid')
+  events = @(@{
+    id = 'review-1'
+    type = 'product_added_to_cart'
+    productId = 'gpu-mid'
+    occurredAtMs = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+  })
+} | ConvertTo-Json -Depth 4
+$result = Invoke-RestMethod $preview -Method Post -ContentType 'application/json' -Body $inputBody
+$result.placements[0].items | Format-Table productId, reason
+```
+
+Replace `gpu-mid` with another catalog ID or set `personalizationAllowed` to `$false` to see the baseline. This exercises the same handler and ranker as the hosted demo.
 
 Run `npm test` for the engine and API checks. Run `npm run build` to generate the static preview in `dist/`. On an approved Vercel team, use a separate protected Preview deployment of this repo. `vercel.json` sets the build and output directory, `api/preview.ts` is the Node.js function, and the hosted preview opens at `/`. The preview needs no environment variables, store credentials, vendor scripts or production domain. [Vercel Node functions](https://vercel.com/docs/functions/runtimes/node-js), [deployment protection](https://vercel.com/docs/deployment-protection)
 
@@ -22,7 +45,7 @@ The draft implements the product ranking for one proposed homepage row. It runs 
 
 ## Run the browser demo
 
-Use Node.js 24.2 or later. Run `npm start` from this folder and open [http://127.0.0.1:4173](http://127.0.0.1:4173). The app uses local fixtures and has no package dependencies to install.
+Use Node.js 24. Run `npm ci` and `npm start` from this folder and open [the original demo](http://127.0.0.1:4173). It uses a fictional catalog.
 
 1. Open the page to see in-stock bestsellers.
 2. Check **Allow personalization** and select **View** on **Midrange graphics card**. The recommendation row switches to graphics cards.

@@ -11,6 +11,11 @@ const catalogSection = document.querySelector("#sample-catalog");
 const catalogGrid = document.querySelector("#catalog-grid");
 const pageContext = document.querySelector("#page-context");
 const slots = document.querySelector("#placements");
+const demoSection = document.querySelector("#personalization-demo");
+const guide = document.querySelector("#pcx-demo-guide");
+const guideButtons = document.querySelectorAll(".pcx-guide-open");
+const guideClose = document.querySelector("#pcx-guide-close");
+const guideResult = document.querySelector("#pcx-guide-result");
 const cartCount = document.querySelector("#cart-count");
 const nav = document.querySelector(".nav");
 const replayButtons = document.querySelectorAll('[data-action="replay"]');
@@ -26,6 +31,38 @@ let selectedProduct = "gpu-mid";
 let query = "graphics cards";
 let anonymousRows = [];
 let pendingRequest;
+let homeCartKey;
+let visibleRows;
+let guideTrigger;
+
+function openGuide(trigger, revealResults = false) {
+  guideTrigger = trigger;
+  if (revealResults) demoSection.scrollIntoView({ block: "start" });
+  if (guide.matches(":popover-open")) return;
+  guide.showPopover();
+  for (const button of guideButtons) button.setAttribute("aria-expanded", "true");
+  guideClose.focus({ preventScroll: true });
+}
+
+function closeGuide() {
+  guide.hidePopover();
+  for (const button of guideButtons) button.setAttribute("aria-expanded", "false");
+  guideTrigger?.focus({ preventScroll: true });
+}
+
+for (const button of guideButtons) button.addEventListener("click", () => openGuide(button));
+guideClose.addEventListener("click", closeGuide);
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && guide.matches(":popover-open")) {
+    event.preventDefault();
+    closeGuide();
+  }
+});
+document.querySelector('.announcement-bar a[href="#personalization-demo"]').addEventListener("click", event => {
+  if (!catalog.size) return;
+  event.preventDefault();
+  openGuide(event.currentTarget, true);
+});
 
 function showContext(searchMatches = null) {
   catalogSection.hidden = surface !== "home";
@@ -36,12 +73,17 @@ function showContext(searchMatches = null) {
     else button.removeAttribute("aria-current");
   }
   switch (surface) {
-    case "home":
+    case "home": {
       pageContext.replaceChildren();
-      catalogGrid.innerHTML = [...catalog.values()].map(product =>
-        productCard(product, product.description, cart, true)
-      ).join("");
+      const cartKey = [...cart].join(",");
+      if (homeCartKey !== cartKey) {
+        catalogGrid.innerHTML = [...catalog.values()].map(product =>
+          productCard(product, product.description, cart, true)
+        ).join("");
+        homeCartKey = cartKey;
+      }
       break;
+    }
     case "product": {
       const product = catalog.get(selectedProduct);
       if (!product) break;
@@ -83,6 +125,7 @@ function showContext(searchMatches = null) {
 }
 
 function fallbackRows() {
+  if (surface === "home") return anonymousRows;
   const excluded = new Set(cart);
   if (surface === "product") excluded.add(selectedProduct);
   const items = [];
@@ -95,6 +138,17 @@ function fallbackRows() {
   return [{ id: `${prefixes[surface]}_recommendations_1`, title: "Popular picks", items }];
 }
 
+function renderRows(rows, animate = false) {
+  const markup = renderPlacements(surface, rows, catalog, cart, true);
+  if (visibleRows?.markup !== markup) {
+    slots.classList.toggle("pcx-fresh", animate);
+    slots.innerHTML = markup;
+  }
+  visibleRows = { markup, surface, cartKey: [...cart].join(",") };
+  const title = slots.querySelector("h2")?.textContent;
+  guideResult.textContent = title ? `Showing ${title}` : "No suggestions for this page";
+}
+
 async function refresh(message) {
   pendingRequest?.abort();
   const request = new AbortController();
@@ -102,8 +156,9 @@ async function refresh(message) {
   const signal = AbortSignal.any([request.signal, AbortSignal.timeout(2800)]);
   status.textContent = message;
   showContext();
-  slots.classList.remove("pcx-fresh");
-  slots.innerHTML = renderPlacements(surface, fallbackRows(), catalog, cart, true);
+  const sameHome = surface === "home" && visibleRows?.surface === "home" &&
+    visibleRows.cartKey === [...cart].join(",");
+  if (!consent.checked || !sameHome) renderRows(fallbackRows());
   try {
     const response = await fetch("/api/preview", {
       method: "POST", headers: { "Content-Type": "application/json" }, signal,
@@ -117,11 +172,11 @@ async function refresh(message) {
     const data = await response.json();
     if (signal.aborted || pendingRequest !== request) return;
     if (surface === "search") showContext(data.searchMatches);
-    slots.innerHTML = renderPlacements(surface, data.placements, catalog, cart, true);
-    slots.classList.add("pcx-fresh");
+    renderRows(data.placements, true);
   } catch {
     if (request.signal.aborted || pendingRequest !== request) return;
     if (surface === "search") showContext([]);
+    renderRows(fallbackRows());
     status.textContent = "Suggestions are unavailable. Showing popular picks.";
   }
 }
@@ -176,6 +231,7 @@ document.addEventListener("click", event => {
     surface = "home";
     record("product_viewed", id);
     void refresh("Sample shopper viewed " + catalog.get(id).name + ". See the recommendation row below.");
+    demoSection.scrollIntoView({ block: "start" });
   } else if (action === "cart") {
     const product = catalog.get(id);
     if (!product?.inStock) return;
@@ -235,7 +291,7 @@ function initialize() {
     for (const control of controls) control.disabled = false;
     updateReplayButtons();
     showContext();
-    slots.innerHTML = renderPlacements("home", anonymousRows, catalog, cart, true);
+    renderRows(anonymousRows);
     status.textContent = "Choose a product or allow personalization to try a shopper session.";
   } catch {
     status.textContent = "The sample catalog is unavailable. Popular picks are shown below.";
