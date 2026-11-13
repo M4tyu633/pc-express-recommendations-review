@@ -1050,72 +1050,59 @@ setSearchPlaceholder();
 
 function initSearchShortcuts() {
   const shortcuts = document.querySelector(".search-shortcuts");
-  const controls = shortcuts.querySelector(".shortcut-controls");
-  const groups = [...shortcuts.querySelectorAll(".shortcut-group")];
-  const pause = controls.querySelector("[data-shortcuts-pause]");
-  const status = shortcuts.querySelector('[role="status"]');
-  const motion = matchMedia("(prefers-reduced-motion: reduce)");
-  let groupIndex = 0;
-  let pausedByUser;
-  let hovered = false;
-  let timer;
-  let animation;
+  const viewport = shortcuts.querySelector(".shortcut-window");
+  const track = viewport.querySelector(".shortcut-track");
+  const group = track.firstElementChild;
+  const pause = shortcuts.querySelector(".shortcut-pause");
 
-  function showGroup(step, announce = false) {
-    animation?.cancel();
-    groups[groupIndex].hidden = true;
-    groupIndex = (groupIndex + step + groups.length) % groups.length;
-    const group = groups[groupIndex];
-    group.hidden = false;
-    if (!motion.matches) {
-      animation = group.animate([
-        { opacity: 0, transform: "translateX(" + (step * 14) + "px)" },
-        { opacity: 1, transform: "translateX(0)" },
-      ], { duration: 260, easing: "ease-out" });
+  for (const link of group.querySelectorAll("a")) {
+    const key = link.hash.split("/")[1];
+    const mark = wordmark(directoryOverrides[key]?.logo ?? key);
+    if (mark) {
+      link.setAttribute("aria-label", link.textContent);
+      link.innerHTML = mark;
     }
-    if (announce) status.textContent = "Shortcuts " + (groupIndex + 1) + " of " + groups.length;
-    scheduleRotation();
   }
 
-  function scheduleRotation() {
-    clearTimeout(timer);
-    const paused = pausedByUser ?? motion.matches;
-    pause.setAttribute("aria-label", paused ? "Resume shortcut rotation" : "Pause shortcut rotation");
+  // A second copy fills the viewport as the first slides out, so the loop has no gap.
+  const repeat = group.cloneNode(true);
+  repeat.setAttribute("aria-hidden", "true");
+  repeat.querySelectorAll("a").forEach(link => { link.tabIndex = -1; });
+  track.append(repeat);
+
+  function selectCurrentShortcut() {
+    const { parts: [page, key] } = route();
+    const active = page === "partner" ? "#partner/" + key : "";
+    for (const link of track.querySelectorAll("a")) {
+      if (link.hash === active) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    }
+  }
+  selectCurrentShortcut();
+  window.addEventListener("hashchange", selectCurrentShortcut);
+
+  pause.addEventListener("click", () => {
+    const paused = shortcuts.classList.toggle("is-paused");
+    pause.setAttribute("aria-label", paused ? "Resume logo ticker" : "Pause logo ticker");
     pause.querySelector("[data-pause-icon]").toggleAttribute("hidden", paused);
     pause.querySelector("[data-play-icon]").toggleAttribute("hidden", !paused);
-    if (paused || hovered || compactSearch.matches || document.hidden ||
-        shortcuts.matches(":has(:focus-visible), :has(.shortcut-links :focus)")) return;
-    timer = setTimeout(() => showGroup(1), 5000);
-  }
+  });
 
-  shortcuts.addEventListener("pointerenter", event => {
-    if (event.pointerType === "touch") return;
-    hovered = true;
-    animation?.finish();
-    scheduleRotation();
+  group.addEventListener("focusin", ({ target }) => {
+    if (!target.matches("a:focus-visible")) return;
+    closeSuggest();
+    const animation = track.getAnimations()[0];
+    if (!animation) return;
+    const bounds = viewport.getBoundingClientRect();
+    const link = target.getBoundingClientRect();
+    if (link.left >= bounds.left && link.right <= bounds.right) return;
+    const strip = group.getBoundingClientRect();
+    const centered = link.left - strip.left + (link.width - bounds.width) / 2;
+    animation.currentTime = Math.max(0, centered) / strip.width * animation.effect.getTiming().duration;
   });
-  shortcuts.addEventListener("pointerleave", event => {
-    if (event.pointerType === "touch") return;
-    hovered = false;
-    scheduleRotation();
-  });
-  shortcuts.addEventListener("focusin", scheduleRotation);
-  shortcuts.addEventListener("focusout", () => queueMicrotask(scheduleRotation));
-  controls.querySelectorAll("[data-shortcuts-step]").forEach(button => {
-    button.addEventListener("click", () => showGroup(Number(button.dataset.shortcutsStep), true));
-  });
-  pause.addEventListener("click", () => {
-    pausedByUser = !(pausedByUser ?? motion.matches);
-    scheduleRotation();
-  });
-  compactSearch.addEventListener("change", () => {
-    hovered = false;
-    scheduleRotation();
-  });
-  motion.addEventListener("change", scheduleRotation);
-  document.addEventListener("visibilitychange", scheduleRotation);
-  controls.hidden = false;
-  scheduleRotation();
+
+  shortcuts.classList.add("is-ticker");
+  pause.hidden = false;
 }
 
 initSearchShortcuts();
