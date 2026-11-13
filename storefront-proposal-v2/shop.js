@@ -350,7 +350,19 @@ function home() {
   return '<h1 class="sr-only">PC Express storefront</h1><section class="shelf offers-strip"><div class="row-head"><div><h2>Partner offers</h2></div><a class="text-link" href="#offers">All offers <span aria-hidden="true">›</span></a></div>' +
     '<div class="offer-tiles">' + live.map(offerTile).join("") + '</div></section>' +
     partnerRow(placements[0]) +
-    (main ? recRow(main, { link: true }) : '') + partnerRow(placements[1]) + partnerRow(placements[2]) + extra.map(pl => recRow(pl)).join("");
+    (main ? recRow(main, { link: true }) : '') + partnerRow(placements[1]) + partnerRow(placements[2]) + extra.map(pl => recRow(pl)).join("") +
+    `<section class="shelf newsletter" id="newsletter" aria-labelledby="newsletter-title">
+      <div>
+        <h2 id="newsletter-title">PC Express newsletter</h2>
+        <p>Get new arrivals, PC deals and partner offers in your inbox.</p>
+      </div>
+      <form class="newsletter-form" aria-describedby="newsletter-note">
+        <label class="sr-only" for="newsletter-email">Email address</label>
+        <input id="newsletter-email" type="email" placeholder="Email address" autocomplete="email" maxlength="254" required>
+        <button type="submit" class="primary">Sign up</button>
+        <p id="newsletter-note" role="status">Demo signup</p>
+      </form>
+    </section>`;
 }
 const recTitles = { "Recommended for you": "Picked for you", "Bestsellers": "Bestsellers ready to ship", "Top Sellers": "Top sellers",
   "Add-ons for your cart": "Complete your setup", "Customers Also Bought": "Frequently bought together", "Suggested add-ons": "Goes well with" };
@@ -1036,6 +1048,12 @@ document.addEventListener("change", e => {
 dialog.addEventListener("close", () => { for (const b of document.querySelectorAll('[data-action="restock"]')) if (alerts.has(b.dataset.id + "/" + b.dataset.variant)) b.textContent = "Alert saved"; });
 main.addEventListener("submit", event => {
   const form = event.target;
+  if (form.matches(".newsletter-form")) {
+    event.preventDefault();
+    form.reset();
+    form.querySelector('[role="status"]').textContent = "Thanks for trying the demo. Your email wasn’t saved.";
+    return;
+  }
   if (!form.matches(".help-chat-form")) return;
   event.preventDefault();
   const input = form.elements.message;
