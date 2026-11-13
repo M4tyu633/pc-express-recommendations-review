@@ -3,10 +3,11 @@ import { mkdir, readFile, writeFile, copyFile, cp } from "node:fs/promises";
 import { stripTypeScriptTypes } from "node:module";
 import { previewCatalog } from "./catalog/preview-catalog.ts";
 import { storefront } from "./catalog/pcx-storefront-data.ts";
+import { demoParts, partCategories } from "./pc-parts.mjs";
 
 const source = new URL("../", import.meta.url);
 const output = new URL("./dist/", import.meta.url);
-const catalog = previewCatalog.filter(product => product.published);
+const catalog = [...previewCatalog.filter(product => product.published), ...demoParts];
 const slides = storefront.slides;
 await mkdir(new URL("pcx-assets/", output), { recursive: true });
 const assets = new Set([
@@ -40,7 +41,7 @@ for (const [name, path] of [["engine", "../engine.ts"], ["placement-engine", "./
   const js = stripTypeScriptTypes(ts).replace('from "../../engine.ts"', 'from "./engine.js"');
   await writeFile(new URL("ranking/" + name + ".js", output), js);
 }
-await writeFile(new URL("catalog.js", output), "export const data = " + JSON.stringify({ catalog, slides }) + ";\n");
+await writeFile(new URL("catalog.js", output), "export const data = " + JSON.stringify({ catalog, slides, partCategories }) + ";\n");
 const verification = await readFile(new URL("index.html", output), "utf8");
 if (!verification.includes('id="shop-content"')) throw new Error("Missing storefront entry point");
 console.log("Built storefront proposal v2 with " + catalog.length + " products and " + assets.size + " reused images.");

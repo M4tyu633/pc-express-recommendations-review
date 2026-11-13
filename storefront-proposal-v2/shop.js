@@ -50,7 +50,7 @@ const specs = {
 const stockSeed = { "gpu-mid": 7, "gpu-compact": 3, "gpu-premium": 2, "gpu-entry": 11, "gpu-value": 4, "monitor-fhd": 18, "monitor-ek251q": 6,
   "laptop-lenovo": 3, "laptop-a16": 5, "desktop-ms": 2, "laptop-msi": 2, "mouse-g102": 26, "audio-wireless": 8, "psu-650": 14, "psu-850": 5 };
 const products = data.catalog.map(p => ({ ...p, status: stateOverrides[p.id] ?? (p.inStock ? "buy" : "restock"),
-  stock: stockSeed[p.id] ?? 4 + (p.paidOrdersLast30Days * 7) % 29 }));
+  stock: p.stock ?? stockSeed[p.id] ?? 4 + (p.paidOrdersLast30Days * 7) % 29 }));
 const LOW_STOCK = 5;
 
 // ---------- Recommendations ----------
@@ -73,8 +73,12 @@ function remember(type, productId, query) {
 const recs = (surface, productId) => engine.recommend({ surface, productId, shoppingQuery: memory.query, personalizationAllowed: true,
   events: memory.events, cartProductIds: [...basket.keys()] }, Date.now()).placements;
 const byId = new Map(products.map(p => [p.id, p]));
-const categories = [["laptops", "Laptops"], ["desktop", "Desktop PCs"], ["monitor", "Monitors"], ["gpu", "Graphics Cards"], ["headset", "Headsets"], ["mouse", "Mice"], ["keyboard", "Keyboards"], ["power", "Power Supplies"]];
-const modelCode = p => (p.name.match(/\(([A-Z0-9][A-Z0-9-]{4,})\)/) ?? p.name.match(/\b([A-Z]{1,3}\d{3,}[A-Z0-9-]*)\b/))?.[1] ?? "";
+const partCategories = new Map(data.partCategories.map(category => [category.kind, category]));
+const categories = [["laptops", "Laptops"], ["desktop", "Desktop PCs"], ["monitor", "Monitors"], ["headset", "Headsets"], ["mouse", "Mice"], ["keyboard", "Keyboards"], ["parts", "PC Parts"],
+  ...data.partCategories.map(({ kind, name }) => [kind, name])];
+const partLinks = data.partCategories.map(({ kind, name }) => [name, "#shop/" + kind]);
+const modelCode = p => p.model ?? (p.name.match(/\(([A-Z0-9][A-Z0-9-]{4,})\)/) ?? p.name.match(/\b([A-Z]{1,3}\d{3,}[A-Z0-9-]*)\b/))?.[1] ?? "";
+const inCategory = (product, kind) => !kind || (kind === "parts" ? partCategories.has(product.kind) : product.kind === (kind === "laptops" ? "laptop" : kind));
 
 // ---------- Partner offers: one record drives banner, terms, badges, cart and retirement ----------
 const offers = [
@@ -149,6 +153,7 @@ function card(p, opts = {}) {
   const promo = liveOffersFor(p.id)[0];
   return '<article class="shop-card" data-state="' + p.status + '"><a class="card-art" href="#product/' + p.id + '">' + image(p) + '</a>' +
     '<div class="card-info"><h3><a href="#product/' + p.id + '">' + esc(p.name) + '</a></h3>' +
+    (p.specifications ? '<p class="part-summary">' + esc(p.description) + '</p>' : '') +
     '<div class="card-price-line"><p class="price">' + money(p.pricePhp) + (p.status === "quote" ? ' <small>last listed</small>' : '') + '</p>' +
     (promo ? '<span class="card-offer">' + esc(promo.cardBenefit) + '</span>' : '') + '</div>' +
     '<p class="meta"><span class="' + availClass(p) + '">' + availText(p) + '</span>' + (p.paidOrdersLast30Days ? '<span class="sold">' + p.paidOrdersLast30Days + ' sold</span>' : '') + '</p>' +
@@ -341,7 +346,7 @@ function recRow(pl, { title, link } = {}) {
   const perCard = new Set(pl.items.map(i => i.reason)).size > 1;
   const heading = title ?? recTitles[pl.title] ?? pl.title;
   const reason = pl.items[0].reason;
-  const showReason = pl.title !== "Recently viewed" && !perCard && reason !== "Popular and available";
+  const showReason = reason && pl.title !== "Recently viewed" && !perCard && reason !== "Popular and available";
   return '<section class="shelf picks" data-rec="' + esc(pl.id) + '"><div class="row-head"><div><h2>' + esc(heading) + '</h2>' +
     (showReason ? '<p class="muted">' + esc(reason) + '</p>' : '') + '</div>' +
     '<div class="shelf-tools">' + (link ? '<a class="text-link" href="#shop?available=1">Shop in-stock items <span aria-hidden="true">›</span></a>' : '') +
@@ -525,11 +530,19 @@ compactFilters.addEventListener("change", event => {
 });
 function browse(kind, keyword, preset) {
   const heading = keyword ? "Results for “" + keyword + "”" : categories.find(([id]) => id === kind)?.[1] ?? "All products";
-  const pool = products.filter(p => !kind || p.kind === kind || (kind === "laptops" && p.kind === "laptop"));
+  const pool = products.filter(p => inCategory(p, kind));
   const brands = [...new Set(pool.map(p => p.vendor))].sort();
   const gpu = kind === "gpu" || /rtx|gpu|graphics|radeon|rx\s?\d/i.test(keyword);
   const facet = (name, value, label) => '<label class="check"><input type="checkbox" name="' + name + '" value="' + esc(value) + '"' + (preset?.[name]?.includes(value) ? ' checked' : '') + '> ' + label + ' <span class="count" data-count="' + name + ':' + esc(value) + '"></span></label>';
-  return breadcrumb(keyword ? "Search" : heading) + '<h1>' + esc(heading) + '</h1><div class="browse-layout"><details class="filter-panel"' + (compactFilters.matches ? '' : ' open') + '><summary>Filters and sort <span id="filter-count"></span></summary><form id="filters" class="filters v2" aria-label="Filter products">' +
+  const partNavigation = kind === "parts" || partCategories.has(kind)
+    ? '<nav class="part-categories" aria-label="PC Parts categories">' + [["All PC Parts", "#shop/parts"], ...partLinks].map(([name, href]) =>
+      '<a href="' + href + '"' + (href === "#shop/" + kind ? ' aria-current="page"' : '') + '>' + esc(name) + '</a>').join("") + '</nav>'
+    : "";
+  const partFilters = (partCategories.get(kind)?.filters ?? []).map(field => {
+    const options = [...new Set(pool.map(p => p.specifications?.[field]).filter(Boolean))].sort();
+    return '<fieldset><legend>' + esc(field) + '</legend>' + options.map(value => facet("spec-" + field, value, esc(value))).join("") + '</fieldset>';
+  }).join("");
+  return breadcrumb(keyword ? "Search" : heading) + '<h1>' + esc(heading) + '</h1>' + partNavigation + '<div class="browse-layout"><details class="filter-panel"' + (compactFilters.matches ? '' : ' open') + '><summary>Filters and sort <span id="filter-count"></span></summary><form id="filters" class="filters v2" aria-label="Filter products">' +
     '<div class="filter-head"><h2>Filters</h2><button type="reset" class="link">Clear</button></div>' +
     '<fieldset><legend>Availability</legend>' + Object.keys(STATE).map(s => facet("state", s, STATE[s].label)).join("") + '</fieldset>' +
     '<fieldset><legend>Brand</legend>' + brands.map(b => facet("brand", b, esc(b))).join("") + '</fieldset>' +
@@ -537,7 +550,7 @@ function browse(kind, keyword, preset) {
       '<fieldset><legend>Card length</legend><label>Max length (mm) <input name="maxlen" type="number" min="150" max="400" step="10" placeholder="Any"></label></fieldset>' : '') +
     (kind === "monitor" ? '<fieldset><legend>Resolution</legend>' + facet("res", "Full HD", "Full HD") + facet("res", "QHD", "QHD") + '</fieldset>' +
       '<fieldset><legend>Refresh rate</legend>' + facet("hz", "144", "144 Hz+") + facet("hz", "180", "180 Hz+") + '</fieldset>' : '') +
-    '<fieldset><legend>Price</legend><label>Up to (₱) <input name="budget" type="number" min="1" max="10000000" placeholder="No limit"></label></fieldset>' +
+    partFilters + '<fieldset><legend>Price</legend><label>Up to (₱) <input name="budget" type="number" min="1" max="10000000" placeholder="No limit"></label></fieldset>' +
     '<label>Sort <select name="sort"><option value="">Best match · ready to ship first</option><option value="price">Price: low to high</option><option value="popular">Most ordered (30 days)</option></select></label>' +
     '</form></details><section><div class="result-bar"><p id="result-count" class="result-count" aria-live="polite"></p><div id="active-filters" class="active-filters"></div></div><div id="exact"></div><div id="results"></div></section></div>';
 }
@@ -545,18 +558,19 @@ function matches(p, values, skip) {
   const has = (k, v) => !values.getAll(k).length || skip === k || values.getAll(k).includes(v);
   const sp = specs[p.id] ?? {};
   const budget = Number(values.get("budget")), maxlen = Number(values.get("maxlen"));
+  const partFilters = new Set([...values.keys()].filter(key => key.startsWith("spec-")));
   return has("state", p.status) && has("brand", p.vendor) &&
     (!values.getAll("vram").length || skip === "vram" || values.getAll("vram").some(v => (sp.vram ?? "").startsWith(v))) &&
     has("res", sp.res) && (!values.getAll("hz").length || skip === "hz" || values.getAll("hz").some(h => (sp.hz ?? 0) >= Number(h))) &&
-    (!budget || p.pricePhp <= budget) && (!maxlen || (sp.length && parseInt(sp.length) <= maxlen));
+    (!budget || p.pricePhp <= budget) && (!maxlen || (sp.length && parseInt(sp.length) <= maxlen)) &&
+    [...partFilters].every(key => has(key, p.specifications?.[key.slice(5)]));
 }
 function filterProducts(kind, keyword) {
   const form = document.querySelector("#filters");
   if (!form) return;
   const values = new FormData(form);
   const words = keyword.toLowerCase().replace(/\brtxx\b/g, "rtx").split(/\s+/).filter(Boolean);
-  const text = p => [p.name, p.description, p.category, p.vendor, p.keywords, modelCode(p)].join(" ").toLowerCase();
-  const pool = products.filter(p => (!kind || p.kind === kind || (kind === "laptops" && p.kind === "laptop")) && words.every(w => text(p).includes(w)));
+  const pool = products.filter(p => inCategory(p, kind) && words.every(w => searchText(p).includes(w)));
   const exact = keyword.length >= 5 ? products.find(p => modelCode(p) && modelCode(p).toLowerCase() === keyword.toLowerCase().trim()) : null;
   const picked = pool.filter(p => matches(p, values));
   const sort = values.get("sort");
@@ -565,7 +579,8 @@ function filterProducts(kind, keyword) {
   for (const el of form.querySelectorAll("[data-count]")) {
     const [k, v] = el.dataset.count.split(":");
     const n = pool.filter(p => matches(p, values, k)).filter(p => k === "state" ? p.status === v : k === "brand" ? p.vendor === v :
-      k === "vram" ? (specs[p.id]?.vram ?? "").startsWith(v) : k === "res" ? specs[p.id]?.res === v : (specs[p.id]?.hz ?? 0) >= Number(v)).length;
+      k === "vram" ? (specs[p.id]?.vram ?? "").startsWith(v) : k === "res" ? specs[p.id]?.res === v :
+      k.startsWith("spec-") ? p.specifications?.[k.slice(5)] === v : (specs[p.id]?.hz ?? 0) >= Number(v)).length;
     el.textContent = "(" + n + ")";
     el.closest("label").classList.toggle("zero", n === 0);
   }
@@ -622,7 +637,7 @@ const demoSpecifications = {
 };
 function specRows(p, variant = "") {
   const s = specs[p.id];
-  let rows = Object.entries(demoSpecifications[p.id] ?? {});
+  let rows = Object.entries(p.specifications ?? demoSpecifications[p.id] ?? {});
   if (s?.chip) {
     rows = [["GPU", s.chip], ["Video memory", s.vram], ["Memory bus", s.bus], ["Card length", s.length],
       ["Power connector", s.power], ["Recommended PSU", s.psu], ["Display outputs", "DisplayPort and HDMI"]];
@@ -644,7 +659,16 @@ function details(p, variant = "") {
     check: "Ask Sales to check online and branch stock.",
     restock: "Get an alert when this configuration is back.",
   }[s];
-  const rows = recs("product", p.id).sort((a, b) => s !== "buy" ? /similar/i.test(b.title) - /similar/i.test(a.title) : 0);
+  const compatible = p.specifications ? (p.accessoryIds ?? []).filter(id => byId.get(id)?.status === "buy" && !basket.has(id)) : [];
+  const rows = recs("product", p.id)
+    .map(row => ({ ...row, items: row.items.filter(item => !compatible.includes(item.productId)) }))
+    .filter(row => row.items.length)
+    .sort((a, b) => s !== "buy" ? /similar/i.test(b.title) - /similar/i.test(a.title) : 0);
+  if (compatible.length) rows.unshift({
+    id: "compatible-parts",
+    title: "Compatible parts",
+    items: compatible.map(productId => ({ productId, reason: "" })),
+  });
   const offersHere = liveOffersFor(p.id);
   const model = modelCode(p);
   const brand = p.vendor === "PCX" ? wordmark("pcx-desktop") : esc(p.vendor);
@@ -845,7 +869,9 @@ function render({ scroll = false } = {}) {
       if (word) remember("search", null, word);
       main.innerHTML = browse(kind, word, params.get("available") ? { state: ["buy"] } : null);
       const f = document.querySelector("#filters"), update = () => filterProducts(kind, word);
-      f.addEventListener("input", update); f.addEventListener("reset", () => queueMicrotask(update)); update();
+      f.addEventListener("input", update);
+      f.addEventListener("reset", () => setTimeout(() => { if (f.isConnected) update(); }, 0));
+      update();
       break;
     }
     case "product": if (product) remember("product_viewed", product.id); main.innerHTML = product ? details(product, option) : missing(); mobileBarFor(product, option); break;
@@ -987,7 +1013,7 @@ suggest.id = "search-suggest"; suggest.className = "suggest"; suggest.hidden = t
 search.append(suggest);
 query.setAttribute("role", "combobox"); query.setAttribute("aria-controls", "search-suggest"); query.setAttribute("aria-expanded", "false"); query.setAttribute("aria-autocomplete", "list");
 const popularTerms = ["RTX 5050", "Gaming laptop", "27 inch monitor", "Wireless mouse", "Mechanical keyboard", "650W power supply"];
-const searchText = p => [p.name, p.description, p.category, p.vendor, p.keywords, modelCode(p)].join(" ").toLowerCase();
+const searchText = p => [p.name, p.description, p.category, p.vendor, p.keywords, modelCode(p), ...Object.values(p.specifications ?? {})].join(" ").toLowerCase();
 function suggestMatches(q) {
   const words = q.toLowerCase().replace(/\brtxx\b/g, "rtx").split(/\s+/).filter(Boolean);
   return products.filter(p => words.every(w => searchText(p).includes(w)))
@@ -1037,7 +1063,7 @@ document.addEventListener("pointerdown", e => { if (!search.contains(e.target)) 
 suggest.addEventListener("click", e => { if (e.target.closest("a")) { closeSuggest(); query.blur(); } });
 
 // ---------- Brands menu: every partner page stays one click from the main nav ----------
-const brandMenu = document.querySelector("#brand-menu"), brandBtn = document.querySelector(".nav-drop");
+const brandMenu = document.querySelector("#brand-menu"), brandBtn = document.querySelector('[aria-controls="brand-menu"]');
 const rasterBrandLogos = new Set(["adata", "galax", "zotac", "viewsonic", "d-link"]);
 const brandTile = (name, href, logo) => '<a href="' + href + '" class="bm-item" aria-label="' + esc(name) + '">' + logo + '<span>' + esc(name) + '</span></a>';
 brandMenu.innerHTML = '<div class="frame"><div class="bm-grid">' +
@@ -1048,16 +1074,10 @@ brandMenu.innerHTML = '<div class="frame"><div class="bm-grid">' +
     const logo = '<span class="logo logo-' + slug + '"><img src="/partner-assets/logos/' + slug + '.' + extension + '" alt="" loading="lazy"></span>';
     return brandTile(name, "#search/" + encodeURIComponent(name), logo);
   }).join("") + '</div></div>';
-const setBrandMenu = open => { brandMenu.hidden = !open; brandBtn.setAttribute("aria-expanded", String(open)); };
-brandBtn.addEventListener("click", () => setBrandMenu(brandMenu.hidden));
-document.addEventListener("pointerdown", e => { if (!e.target.closest(".nav-brands")) setBrandMenu(false); });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && !brandMenu.hidden) { setBrandMenu(false); brandBtn.focus(); } });
-brandMenu.addEventListener("click", e => { if (e.target.closest("a")) setBrandMenu(false); });
-
 // ---------- All Products menu (same groups as the live site) ----------
 const allMenu = document.querySelector("#all-menu"), allBtn = document.querySelector(".nav-all .cat-all");
 const allGroups = [
-  ["PC Components", [["Graphics Cards", "#shop/gpu"], ["Power Supplies", "#shop/power"], ["Processors", "#search/processor"], ["Motherboards", "#search/motherboard"], ["Memory", "#search/memory"], ["Storage", "#search/ssd"]]],
+  ["PC Components", partLinks],
   ["PC Peripherals & Accessories", [["Monitors", "#shop/monitor"], ["Keyboards", "#shop/keyboard"], ["Mice", "#shop/mouse"], ["Headsets", "#shop/headset"]]],
   ["Gaming Devices & Accessories", [["Gaming laptops", "#search/gaming laptop"], ["Gaming headsets", "#search/gaming"], ["Gaming mice", "#search/g102"], ["Gaming keyboards", "#search/g213"]]],
   ["Desktop PCs", "#shop/desktop"], ["Laptops", "#shop/laptops"], ["Power Station", "#search/power station"],
@@ -1068,17 +1088,39 @@ allMenu.innerHTML = '<ul>' + allGroups.map(([label, to], i) => Array.isArray(to)
   ? '<li class="has-sub"><button type="button" class="am-row" data-sub="' + i + '">' + esc(label) + '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><ul class="am-sub">' +
     to.map(([l, h]) => '<li><a href="' + h + '">' + esc(l) + '</a></li>').join("") + '</ul></li>'
   : '<li><a class="am-row" href="' + to + '">' + esc(label) + '</a></li>').join("") + '</ul>';
-const setAllMenu = open => {
-  allMenu.hidden = !open;
-  allBtn.setAttribute("aria-expanded", String(open));
-  if (!open) allMenu.querySelectorAll(".has-sub.open").forEach(group => group.classList.remove("open"));
-};
-allBtn.addEventListener("click", () => setAllMenu(allMenu.hidden));
+const partsMenu = document.querySelector("#parts-menu"), partsBtn = document.querySelector('[aria-controls="parts-menu"]');
+partsMenu.innerHTML = '<ul>' + [...partLinks, ["View all PC parts", "#shop/parts"]].map(([name, href]) =>
+  '<li><a class="am-row" href="' + href + '">' + esc(name) + '</a></li>').join("") + '</ul>';
+
+const navMenus = [[allBtn, allMenu], [partsBtn, partsMenu], [brandBtn, brandMenu]];
+function setNavMenu(button, menu, open) {
+  menu.hidden = !open;
+  button.setAttribute("aria-expanded", String(open));
+  if (!open && menu === allMenu) menu.querySelectorAll(".has-sub.open").forEach(group => group.classList.remove("open"));
+}
+for (const [button, menu] of navMenus) {
+  button.addEventListener("click", () => {
+    const open = menu.hidden;
+    for (const [trigger, panel] of navMenus) setNavMenu(trigger, panel, open && panel === menu);
+  });
+  menu.addEventListener("click", event => { if (event.target.closest("a")) setNavMenu(button, menu, false); });
+}
+document.addEventListener("pointerdown", event => {
+  for (const [button, menu] of navMenus) {
+    if (!menu.hidden && !button.parentElement.contains(event.target)) setNavMenu(button, menu, false);
+  }
+});
+document.addEventListener("keydown", event => {
+  if (event.key !== "Escape") return;
+  const open = navMenus.find(([, menu]) => !menu.hidden);
+  if (open) {
+    const [button, menu] = open;
+    setNavMenu(button, menu, false);
+    button.focus();
+  }
+});
 allMenu.addEventListener("click", e => {
   const sub = e.target.closest("[data-sub]");
   if (sub) { const li = sub.parentElement; const open = !li.classList.contains("open"); allMenu.querySelectorAll(".has-sub").forEach(x => x.classList.remove("open")); li.classList.toggle("open", open); return; }
-  if (e.target.closest("a")) setAllMenu(false);
 });
-document.addEventListener("pointerdown", e => { if (!e.target.closest(".nav-all")) setAllMenu(false); });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && !allMenu.hidden) { setAllMenu(false); allBtn.focus(); } });
 render();
