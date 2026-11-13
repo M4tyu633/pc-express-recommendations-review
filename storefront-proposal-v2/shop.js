@@ -189,7 +189,7 @@ const stagePartners = [
   ["business", "Business Solutions", "#0a3a99", 5],
 ];
 const otherBrands = ["Acer", "Gigabyte", "HP", "Dell", "Logitech", "HyperX", "Kingston", "ADATA", "Sapphire", "Galax", "Inno3D", "Zotac", "AOC", "ViewSonic", "JBL", "Seagate", "Synology", "TP-Link", "D-Link"];
-const rotation = stagePartners.filter(([k]) => k !== "taiwan-excellence"); // Taiwan Excellence holds a fixed side slot
+const rotation = stagePartners;
 const heroViews = Object.fromEntries(stagePartners.map(([k]) => [k, 0]));
 // Official logos: Wikimedia Commons SVGs for AMD, NVIDIA, Intel, Microsoft, Lenovo, MSI, Samsung and ASUS;
 // PC Express, Powered by ASUS, Agent Computer and Taiwan Excellence files from pcx.com.ph.
@@ -207,10 +207,18 @@ function wordmark(key) {
   return '<span class="logo logo-' + key + '">' + (above ? '<small>' + above + '</small>' : '') + '<img src="/partner-assets/logos/' + file + '" alt="' + esc(alt) + '" loading="lazy">' + (below ? '<small>' + below + '</small>' : '') + '</span>';
 }
 const chevron = dir => '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="' + (dir < 0 ? "M15 5 8 12l7 7" : "M9 5l7 7-7 7") + '" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function taiwanArtwork() {
+  return '<div class="lp-compose"><div class="lp-compose-copy"><img src="' +
+    PA("taiwan-excellence", "Taiwan-Logo-2.png") + '" alt="Taiwan Excellence. Everyday Excellence." width="900" height="250"></div>' +
+    '<img class="lp-compose-products" src="' + PA("taiwan-excellence", "Taiwan-Products.webp") + '" alt="" width="1400" height="526"></div>';
+}
 function stagePane([key, name, color, slide, head, copy, items], i) {
   const cta = '<span class="pane-cta">Shop ' + esc(name) + ' <span aria-hidden="true">›</span></span>';
   const lazy = i ? ' loading="lazy"' : ' fetchpriority="high"';
   const attrs = ' href="#partner/' + key + '" style="--brand:' + color + '" data-key="' + key + '"' + (i ? ' aria-hidden="true" tabindex="-1"' : '');
+  if (key === "taiwan-excellence") {
+    return '<a class="pane taiwan-pane' + (i ? '' : ' is-active') + '"' + attrs + ' aria-label="Shop Taiwan Excellence">' + taiwanArtwork() + '</a>';
+  }
   if (slide && typeof slide === "object") {
     return '<a class="pane art' + (i ? '' : ' is-active') + '"' + attrs + ' aria-label="' + esc(name) + ': ' + esc(slide.label) + '"><img src="/partner-assets/' + slide.d + '" alt="" width="1800" height="600"' + lazy + '></a>';
   }
@@ -230,9 +238,12 @@ function teTile() {
 function offerSide() {
   const live = offers.filter(o => offerStatus(o) === "live").sort((a, b) => a.end.localeCompare(b.end));
   const o = live[0];
-  if (!o) return '<a class="side-tile offer" href="#offers"><div><p class="kicker">Partner offers</p><p>See current offers</p></div></a>';
-  return '<a class="side-tile offer" href="#offer/' + o.id + '"><div><p><b>' + esc(o.benefit) + '</b></p><p class="fine">Valid until ' + fmtDate(o.end) + '</p><span class="pane-cta">Shop offer <span aria-hidden="true">›</span></span></div>' +
-    '<img class="side-art" src="/pcx-assets/' + esc(o.art) + '" alt="" width="1440" height="480"></a>';
+  if (!o) return '<a class="side-tile offer" href="#offers"><span class="side-offer-copy"><strong>Browse offers</strong></span>' + chevron(1) + '</a>';
+  const product = byId.get(o.items[0]);
+  const logo = wordmark(o.partner.toLowerCase()) ?? esc(o.partner);
+  return '<a class="side-tile offer" href="#offer/' + o.id + '"><span class="side-offer-copy">' + logo +
+    '<strong>' + esc(o.benefit) + '</strong><time datetime="' + o.end + '">Ends ' + fmtDate(o.end) + '</time></span>' +
+    '<img class="side-offer-product" src="/pcx-assets/' + esc(product.image) + '" alt="" width="480" height="480">' + chevron(1) + '</a>';
 }
 function stage() {
   return '<section class="stage" aria-label="Partner showcases"><div class="frame">' +
@@ -319,7 +330,7 @@ function recRow(pl, { title, link } = {}) {
   const items = pl.items.map(i => [byId.get(i.productId), i.reason]);
   const perCard = new Set(pl.items.map(i => i.reason)).size > 1;
   const heading = title ?? recTitles[pl.title] ?? pl.title;
-  const reason = pl.items[0].reason;
+  const reason = pl.title === "Recently viewed" ? "Want another look?" : pl.items[0].reason;
   const showReason = !perCard && reason !== "Popular and available";
   return '<section class="shelf picks" data-rec="' + esc(pl.id) + '"><div class="row-head"><div><h2>' + esc(heading) + '</h2>' +
     (showReason ? '<p class="muted">' + esc(reason) + '</p>' : '') + '</div>' +
@@ -451,7 +462,7 @@ function partnerPage(key, focus) {
   const color = stagePartners.find(([k]) => k === key)?.[2] ?? "#0b45a8";
   const list = landingProducts(L);
   const heroArt = L.compose
-    ? '<div class="lp-compose"><div class="lp-compose-copy"><img src="' + PA(key, "Taiwan-Logo-2.png") + '" alt="Taiwan Excellence. Everyday Excellence." width="900" height="250"></div><img class="lp-compose-products" src="' + PA(key, "Taiwan-Products.webp") + '" alt="" width="1400" height="526"></div>'
+    ? taiwanArtwork()
     : '<picture>' + (L.hero[1] ? '<source media="(max-width: 700px)" srcset="' + PA(key, L.hero[1]) + '">' : '') + '<img src="' + PA(key, L.hero[0]) + '" alt="' + esc(L.name) + '" width="1800" height="600" fetchpriority="high"></picture>';
   // Offers: the store's own offer records for this partner plus dated partner promos. Ended ones leave the page.
   const ownOffers = offers.filter(o => (L.offerPartner && o.partner === L.offerPartner) || (L.viaItems && o.items.some(id => L.test(byId.get(id)))));
@@ -558,11 +569,59 @@ function filterProducts(kind, keyword) {
 }
 
 // ---------- Product page ----------
-function specRows(p) {
+// Configuration examples for the demo catalog. Values may vary by retail SKU.
+const demoSpecifications = {
+  "laptop-lenovo": {
+    Processor: "AMD Ryzen 7 250", Graphics: "GeForce RTX 5060 · 8 GB GDDR7", RAM: "16 GB DDR5-5600",
+    Storage: "512 GB M.2 NVMe SSD", Display: "15.6″ Full HD · 144 Hz", "Operating system": "Windows 11 Home",
+    Connectivity: "Wi-Fi, Bluetooth and Ethernet", Ports: "USB, HDMI and audio", Keyboard: "RGB backlit",
+  },
+  "laptop-a16": {
+    Processor: "AMD Ryzen 7", Graphics: "GeForce RTX 5050 · 8 GB GDDR7", RAM: "16 GB DDR5",
+    Storage: "512 GB NVMe SSD", Display: "16″ WUXGA · 165 Hz", "Operating system": "Windows 11 Home",
+    Connectivity: "Wi-Fi and Bluetooth", Ports: "USB-A, USB-C, HDMI and audio", Keyboard: "Backlit",
+  },
+  "laptop-msi": {
+    Processor: "Intel Core i7 HX", Graphics: "GeForce RTX 5070 · 8 GB GDDR7", RAM: "16 GB DDR5",
+    Storage: "1 TB NVMe SSD", Display: "15.6″ QHD · 165 Hz", "Operating system": "Windows 11 Home",
+    Connectivity: "Wi-Fi, Bluetooth and Ethernet", Ports: "USB-A, USB-C, HDMI and audio", Keyboard: "RGB backlit",
+  },
+  "desktop-ms": {
+    Processor: "Intel Core i5", Graphics: "GeForce RTX 3050", RAM: "16 GB DDR4", Storage: "1 TB NVMe SSD",
+    "Operating system": "Windows 11 Home", Networking: "Gigabit Ethernet", "Case type": "Mid tower",
+  },
+  "desktop-in": {
+    Processor: "Intel Core i5", Graphics: "GeForce RTX 3050", RAM: "16 GB DDR4", Storage: "512 GB NVMe SSD",
+    "Operating system": "Windows 11 Home", Networking: "Gigabit Ethernet", "Case type": "Mid tower",
+  },
+  "audio-usb": { Connection: "USB-A wired", Audio: "Stereo", "Wearing style": "On-ear", Microphone: "Noise-reducing boom mic", Controls: "Inline volume and mute" },
+  "audio-stereo": { Connection: "3.5 mm wired", Audio: "Stereo", "Wearing style": "Over-ear", Microphone: "Swivel-to-mute boom mic", Controls: "On-ear volume" },
+  "audio-wireless": { Connection: "Bluetooth", Audio: "Stereo", "Wearing style": "On-ear", Microphone: "Dual beamforming microphones", Charging: "USB-C" },
+  "audio-studio": { Connection: "2.4 GHz wireless", Audio: "Stereo", "Wearing style": "Over-ear", Microphone: "Boom mic", Charging: "USB-C" },
+  mouse: { Connection: "2.4 GHz USB receiver", Sensor: "Optical", Resolution: "1,000 DPI", Buttons: "3", Power: "AA battery" },
+  "mouse-m185": { Connection: "2.4 GHz USB receiver", Sensor: "Optical", Resolution: "1,000 DPI", Buttons: "3", Power: "AA battery" },
+  "mouse-g102": { Connection: "USB-A wired", Sensor: "Optical", Resolution: "Up to 8,000 DPI", Buttons: "6", Lighting: "LIGHTSYNC RGB" },
+  keyboard: { Connection: "USB-A wired", Layout: "Full-size with number pad", Switches: "Membrane", Lighting: "RGB", Controls: "Volume knob" },
+  "keyboard-k120": { Connection: "USB-A wired", Layout: "Full-size with number pad", Switches: "Membrane", Lighting: "None", Design: "Low-profile keys" },
+  "keyboard-g213": { Connection: "USB-A wired", Layout: "Full-size with number pad", Switches: "Membrane", Lighting: "LIGHTSYNC RGB", Controls: "Dedicated media keys" },
+  "psu-650": { Wattage: "650 W", Efficiency: "80 PLUS Bronze", "Form factor": "ATX", Cabling: "Fixed cables", "Fan size": "120 mm", Connectors: "24-pin ATX, EPS, PCIe 6+2-pin and SATA" },
+  "psu-850": { Wattage: "850 W", Efficiency: "80 PLUS Gold", "Form factor": "ATX 3.1", Cabling: "Fully modular", "Fan size": "120 mm", Connectors: "24-pin ATX, EPS, PCIe 16-pin, PCIe 6+2-pin and SATA" },
+  "monitor-fhd": { Inputs: "HDMI and VGA", "Stand adjustment": "Tilt", "Aspect ratio": "16:9" },
+  "monitor-ek251q": { Inputs: "HDMI and VGA", "Stand adjustment": "Tilt", "Aspect ratio": "16:9" },
+  "monitor-qhd": { Inputs: "DisplayPort and HDMI", "Stand adjustment": "Tilt", "Aspect ratio": "16:9" },
+};
+function specRows(p, variant = "") {
   const s = specs[p.id];
-  if (!s) return [["Configuration", p.description], ["Model code", modelCode(p) || "See title"]];
-  if (s.chip) return [["GPU", s.chip], ["Memory", s.vram], ["Memory bus", s.bus], ["Card length", s.length], ["Power connector", s.power], ["Recommended PSU", s.psu]];
-  return [["Screen size", s.size], ["Resolution", s.res], ["Refresh rate", s.hz + " Hz"], ["Panel", s.panel]];
+  let rows = Object.entries(demoSpecifications[p.id] ?? {});
+  if (s?.chip) {
+    rows = [["GPU", s.chip], ["Video memory", s.vram], ["Memory bus", s.bus], ["Card length", s.length],
+      ["Power connector", s.power], ["Recommended PSU", s.psu], ["Display outputs", "DisplayPort and HDMI"]];
+  } else if (s?.size) {
+    rows = [["Screen size", s.size], ["Resolution", s.res], ["Refresh rate", s.hz + " Hz"], ["Panel", s.panel], ...rows];
+  }
+  if (p.id === "desktop-in") rows.push(["Package", variant === "complete" ? "Desktop, monitor, keyboard and mouse" : "Desktop tower"]);
+  const model = modelCode(p);
+  return [...rows, ["Brand", p.vendor], ...(model ? [["Model code", model]] : [])];
 }
 function details(p, variant = "") {
   const hasVariants = p.id === "desktop-in";
@@ -593,8 +652,8 @@ function details(p, variant = "") {
       '<div><dt>Store pickup</dt><dd>PC Express Online Paterno<small>After Sales confirms your order</small></dd></div></dl>' : '') +
     '<details class="product-policies"><summary>Payment and warranty</summary><dl><div><dt>Payment</dt><dd>iPay88, BDO link or bank transfer after Sales confirms your order.</dd></div>' +
     '<div><dt>Warranty</dt><dd>Official PC Express warranty.</dd></div></dl></details></div></section>' +
-    '<section class="shelf"><h2>Key specifications</h2><dl class="spec-list">' + specRows(p).map(([n, v]) => '<div><dt>' + esc(n) + '</dt><dd>' + esc(v) + '</dd></div>').join("") + '</dl>' +
-    (specs[p.id]?.chip ? '<p class="muted small">Length, connector and PSU values are sample fields. Production uses verified manufacturer data.</p>' : '') + '</section>' +
+    '<section class="shelf product-specs"><h2>Key specifications</h2><dl class="spec-list">' + specRows(p, variant).map(([n, v]) => '<div><dt>' + esc(n) + '</dt><dd>' + esc(v) + '</dd></div>').join("") + '</dl>' +
+    '<p class="muted small">Includes sample specs for the demo.</p></section>' +
     rows.map(pl => recRow(pl, { title: /similar/i.test(pl.title) && s !== "buy" ? "Ready to ship instead" : undefined })).join("");
 }
 function mobileBarFor(p, variant) {
@@ -609,11 +668,12 @@ function comparePage(sample) {
   const ids = sample ? ["gpu-mid", "gpu-compact", "gpu-unavailable", "gpu-value"] : comparison;
   const list = ids.map(id => byId.get(id));
   if (!list.length) return emptyShoppingPage("Compare", "Compare products", "Select Compare on up to four products to see their specs side by side.", "Browse products", "#shop", "Try a sample comparison", "#compare/sample");
-  const labels = [...new Set(list.flatMap(p => specRows(p).map(([l]) => l)))];
+  const specifications = list.map(p => new Map(specRows(p)));
+  const labels = [...new Set(specifications.flatMap(fields => [...fields.keys()]))];
   const rows = [["Price", list.map(p => money(p.pricePhp))], ["Availability", list.map(p => chip(p.status, p))],
     ["Offers", list.map(p => liveOffersFor(p.id).map(o => esc(o.partner) + " · " + esc(o.benefit)).join("<br>") || "—")],
-    ...labels.map(l => [l, list.map(p => esc(specRows(p).find(([n]) => n === l)?.[1] ?? "—"))])];
-  return breadcrumb("Compare") + '<h1>Compare ' + list.length + ' products</h1><div class="compare-tools"><label class="check"><input type="checkbox" id="diff-only"> Show only differences</label><span class="muted">' + (sample ? "Sample comparison" : "Your selection") + ' · up to 4</span></div>' +
+    ...labels.map(l => [l, specifications.map(fields => esc(fields.get(l) ?? "—"))])];
+  return breadcrumb("Compare") + '<h1>Compare ' + list.length + ' products</h1><div class="compare-tools"><label class="check"><input type="checkbox" id="diff-only"> Show only differences</label><span class="muted">Includes sample specs</span></div>' +
     '<div class="compare-scroll" tabindex="0" role="region" aria-label="Product comparison table"><table class="compare-table v2"><thead><tr><th scope="col">Product</th>' + list.map(p => '<th scope="col"><a href="#product/' + p.id + '">' + image(p) + esc(p.name) + '</a></th>').join("") + '</tr></thead><tbody>' +
     rows.map(([l, cells]) => { const same = cells.every(c => c === cells[0]); return '<tr class="' + (same ? 'same' : 'differs') + '"><th scope="row">' + esc(l) + '</th>' + cells.map(c => '<td>' + c + '</td>').join("") + '</tr>'; }).join("") +
     '<tr><th scope="row">Next step</th>' + list.map(p => '<td>' + actionButton(p) + '</td>').join("") + '</tr></tbody></table></div>';

@@ -10,6 +10,10 @@
 .v2 .lp-compose { position:relative; height:100%; display:grid; grid-template-columns:42% 58%; align-items:center; padding:0 3%; }
 .v2 .lp-compose-copy img { width:100%; height:auto; object-fit:contain; }
 .v2 .lp-compose .lp-compose-products { width:100%; height:auto; max-height:100%; object-fit:contain; align-self:end; }
+.v2 .taiwan-pane { background:#fff; }
+.v2 .taiwan-pane .lp-compose { grid-template-columns:minmax(0, 2fr) minmax(0, 3fr); grid-template-rows:minmax(0, 1fr); gap:12px; padding:0 7%; }
+.v2 .taiwan-pane .lp-compose-copy img { display:block; max-width:100%; }
+.v2 .taiwan-pane .lp-compose-products { align-self:center; }
 .v2 .lp-bar { display:flex; justify-content:space-between; align-items:center; gap:16px 28px; flex-wrap:wrap; background:#fff; border:1px solid var(--line); border-radius:0 0 8px 8px; padding:16px 20px; }
 .v2 .lp-id { display:flex; align-items:center; gap:16px; min-width:0; flex:1 1 420px; }
 .v2 .lp-id h1 { margin:0; font-size:26px; }
@@ -76,6 +80,7 @@
   .v2 .lp-hero.compose { aspect-ratio:4 / 3; }
   .v2 .lp-compose { grid-template-columns:1fr; grid-template-rows:auto 1fr; padding:16px 6% 0; }
   .v2 .lp-compose-copy img { max-width:78%; }
+  .v2 .taiwan-pane .lp-compose { padding-inline:4%; }
   .v2 .lp-bar { padding:14px; }
   .v2 .lp-id { flex-basis:100%; gap:12px; }
   .v2 .lp-id h1 { font-size:21px; }
@@ -134,7 +139,7 @@
 /* Shopee-style fine print instead of red kickers */
 .v2 .kicker { color:#7a828f !important; font-weight:400 !important; font-size:12px !important; }
 .v2 .fine { margin:6px 0 0 !important; font-size:11.5px !important; color:#8a919e !important; font-weight:400; }
-.v2 .side-tile .fine { margin:2px 0 6px !important; }
+.v2 .side-offer-copy .logo img { max-width:82px; max-height:18px; }
 
 /* Visual hierarchy (Shopee/Lazada pattern): price is the loudest thing, title is quiet, meta is small and grey. */
 .v2 .shop-card .card-info { gap:4px; }
@@ -165,8 +170,8 @@
 .v2 .header-tools .tool { position:relative; display:grid; place-items:center; flex:none; width:44px; height:44px; min-height:0; padding:0; border:0; border-radius:50%; color:#1f2937; background:none; cursor:pointer; }
 .v2 .header-tools .tool:is(:hover, :focus-visible) { background:#f1f3f6; color:var(--blue); }
 .v2 .header-tools a.tool::after { content:none !important; }
-.v2 .header-tools .badge { position:absolute; top:2px; right:0; min-width:16px !important; height:16px !important; padding:0 4px; border-radius:9px; background:var(--red) !important; color:#fff; font-size:10.5px !important; font-weight:700; line-height:16px; border:2px solid #fff; display:grid; place-items:center; }
-.v2 .header-tools .badge[hidden] { display:none !important; }
+.v2 .header-tools .badge { position:absolute; top:0; right:0; min-width:18px; height:18px; padding:0 3px; border-radius:9px; background:var(--red); color:#fff; font-size:10px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1; border:2px solid #fff; display:flex; align-items:center; justify-content:center; }
+.v2 .header-tools .badge[hidden] { display:none; }
 /* Search suggestions */
 .v2 .shop-search { position:relative; overflow:visible !important; }
 .v2 .shop-search input { border-radius:2px 0 0 2px; }
