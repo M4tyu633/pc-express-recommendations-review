@@ -198,6 +198,8 @@ const logoFiles = {
   "asus-agent": ["agent-computer.png", "ASUS Agent Computer"], nvidia: ["nvidia.svg", "NVIDIA"], intel: ["intel.svg", "Intel"],
   microsoft: ["microsoft.svg", "Microsoft"], lenovo: ["lenovo.svg", "Lenovo"], msi: ["msi.svg", "MSI", "Powered by"],
   samsung: ["samsung.svg", "Samsung"], business: ["pcx.png", "PC Express", null, "Business Solutions"],
+  "asus-brand": ["asus.svg", "ASUS"], "msi-brand": ["msi.svg", "MSI"],
+  "pcx-business": ["pcx.png", "PC Express"],
   "pcx-desktop": ["pcx-desktop.png", "PCX Desktop. Ang PC para sa makabagong Pilipino"],
 };
 function wordmark(key) {
@@ -289,9 +291,17 @@ function restartStage() {
   }, 6000);
 }
 function stopStage() { clearInterval(stageTimer); stageTimer = null; }
+const directoryOverrides = {
+  asus: { name: "ASUS", logo: "asus-brand", href: "#search/ASUS" },
+  msi: { name: "MSI", logo: "msi-brand", href: "#search/MSI" },
+  business: { name: "PCX Business Solutions", logo: "pcx-business", href: "#partner/business" },
+};
+const brandDirectory = stagePartners.map(([key, name, color]) => ({
+  name, logo: key, href: "#partner/" + key, color, ...directoryOverrides[key],
+}));
 function brandsPage() {
-  return breadcrumb("Brands") + '<h1>Our brand partners</h1><div class="brand-wall big">' + stagePartners.map(([key, name, color]) =>
-    '<a class="brand-tile" href="#partner/' + key + '" style="--brand:' + color + '" aria-label="' + esc(name) + '">' + wordmark(key) + '<span class="tile-name">' + esc(name) + '</span></a>').join("") + '</div>';
+  return breadcrumb("Brands") + '<h1>Our brand partners</h1><div class="brand-wall big">' + brandDirectory.map(({ name, logo, href, color }) =>
+    '<a class="brand-tile" href="' + href + '" style="--brand:' + color + '" aria-label="' + esc(name) + '">' + wordmark(logo) + '<span class="tile-name">' + esc(name) + '</span></a>').join("") + '</div>';
 }
 function offerTile(o) {
   const st = offerStatus(o);
@@ -1029,9 +1039,9 @@ suggest.addEventListener("click", e => { if (e.target.closest("a")) { closeSugge
 // ---------- Brands menu: every partner page stays one click from the main nav ----------
 const brandMenu = document.querySelector("#brand-menu"), brandBtn = document.querySelector(".nav-drop");
 const rasterBrandLogos = new Set(["adata", "galax", "zotac", "viewsonic", "d-link"]);
-const brandTile = (name, href, logo) => '<a href="' + href + '" class="bm-item">' + logo + '<span>' + esc(name) + '</span></a>';
+const brandTile = (name, href, logo) => '<a href="' + href + '" class="bm-item" aria-label="' + esc(name) + '">' + logo + '<span>' + esc(name) + '</span></a>';
 brandMenu.innerHTML = '<div class="frame"><div class="bm-grid">' +
-  stagePartners.map(([key, name]) => brandTile(name, "#partner/" + key, wordmark(key) ?? "")).join("") +
+  brandDirectory.map(({ name, logo, href }) => brandTile(name, href, wordmark(logo))).join("") +
   otherBrands.map(name => {
     const slug = name.toLowerCase();
     const extension = rasterBrandLogos.has(slug) ? "png" : "svg";
