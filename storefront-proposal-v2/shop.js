@@ -350,19 +350,7 @@ function home() {
   return '<h1 class="sr-only">PC Express storefront</h1><section class="shelf offers-strip"><div class="row-head"><div><h2>Partner offers</h2></div><a class="text-link" href="#offers">All offers <span aria-hidden="true">›</span></a></div>' +
     '<div class="offer-tiles">' + live.map(offerTile).join("") + '</div></section>' +
     partnerRow(placements[0]) +
-    (main ? recRow(main, { link: true }) : '') + partnerRow(placements[1]) + partnerRow(placements[2]) + extra.map(pl => recRow(pl)).join("") +
-    `<section class="shelf newsletter" id="newsletter" aria-labelledby="newsletter-title">
-      <div>
-        <h2 id="newsletter-title">PC Express newsletter</h2>
-        <p>Get new arrivals, PC deals and partner offers in your inbox.</p>
-      </div>
-      <form class="newsletter-form" aria-describedby="newsletter-note">
-        <label class="sr-only" for="newsletter-email">Email address</label>
-        <input id="newsletter-email" type="email" placeholder="Email address" autocomplete="email" maxlength="254" required>
-        <button type="submit" class="primary">Sign up</button>
-        <p id="newsletter-note" role="status">Demo signup</p>
-      </form>
-    </section>`;
+    (main ? recRow(main, { link: true }) : '') + partnerRow(placements[1]) + partnerRow(placements[2]) + extra.map(pl => recRow(pl)).join("");
 }
 const recTitles = { "Recommended for you": "Picked for you", "Bestsellers": "Bestsellers ready to ship", "Top Sellers": "Top sellers",
   "Add-ons for your cart": "Complete your setup", "Customers Also Bought": "Frequently bought together", "Suggested add-ons": "Goes well with" };
@@ -938,10 +926,6 @@ function render({ scroll = false } = {}) {
     const chat = document.getElementById("help-chat");
     chat.scrollIntoView({ block: "start" });
     if (scroll) chat.focus({ preventScroll: true });
-  } else if (page === "home" && key === "newsletter") {
-    const newsletter = document.getElementById("newsletter");
-    newsletter.scrollIntoView({ block: "start" });
-    if (scroll) newsletter.querySelector("input").focus({ preventScroll: true });
   } else if (scroll) {
     if (option === "items" || key === "items") document.querySelector("#eligible-models")?.scrollIntoView();
     else if (page === "offer" && key && location.hash.endsWith("/items")) document.querySelector("#eligible-models")?.scrollIntoView();
@@ -1052,12 +1036,6 @@ document.addEventListener("change", e => {
 dialog.addEventListener("close", () => { for (const b of document.querySelectorAll('[data-action="restock"]')) if (alerts.has(b.dataset.id + "/" + b.dataset.variant)) b.textContent = "Alert saved"; });
 main.addEventListener("submit", event => {
   const form = event.target;
-  if (form.matches(".newsletter-form")) {
-    event.preventDefault();
-    form.reset();
-    form.querySelector('[role="status"]').textContent = "Thanks for trying the demo. Your email wasn’t saved.";
-    return;
-  }
   if (!form.matches(".help-chat-form")) return;
   event.preventDefault();
   const input = form.elements.message;
@@ -1202,11 +1180,12 @@ brandMenu.innerHTML = '<div class="frame"><div class="bm-grid">' +
 // ---------- All Products menu (same groups as the live site) ----------
 const allMenu = document.querySelector("#all-menu"), allBtn = document.querySelector(".nav-all .cat-all");
 const allGroups = [
+  ["See all products", "#shop"],
   ["PC Components", partLinks],
   ["PC Peripherals & Accessories", [["Monitors", "#shop/monitor"], ["Keyboards", "#shop/keyboard"], ["Mice", "#shop/mouse"], ["Headsets", "#shop/headset"]]],
   ["Gaming Devices & Accessories", [["Gaming laptops", "#search/gaming laptop"], ["Gaming headsets", "#search/gaming"], ["Gaming mice", "#search/g102"], ["Gaming keyboards", "#search/g213"]]],
   ["Desktop PCs", "#shop/desktop"], ["Laptops", "#shop/laptops"], ["Power Station", "#search/power station"],
-  ["Business Solutions", "#partner/business"], ["Software", "#search/software"], ["All Products", "#shop"],
+  ["Business Solutions", "#partner/business"], ["Software", "#search/software"],
   ["Pricelists", "#help"], ["Laptop Sale!", "#offer/laptop-bundle"],
 ];
 allMenu.innerHTML = '<ul>' + allGroups.map(([label, to], i) => Array.isArray(to)
