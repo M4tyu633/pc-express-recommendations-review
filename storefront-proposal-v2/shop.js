@@ -1053,7 +1053,6 @@ function initSearchShortcuts() {
   const viewport = shortcuts.querySelector(".shortcut-window");
   const track = viewport.querySelector(".shortcut-track");
   const group = track.firstElementChild;
-  const pause = shortcuts.querySelector(".shortcut-pause");
 
   for (const link of group.querySelectorAll("a")) {
     const key = link.hash.split("/")[1];
@@ -1081,13 +1080,6 @@ function initSearchShortcuts() {
   selectCurrentShortcut();
   window.addEventListener("hashchange", selectCurrentShortcut);
 
-  pause.addEventListener("click", () => {
-    const paused = shortcuts.classList.toggle("is-paused");
-    pause.setAttribute("aria-label", paused ? "Resume logo ticker" : "Pause logo ticker");
-    pause.querySelector("[data-pause-icon]").toggleAttribute("hidden", paused);
-    pause.querySelector("[data-play-icon]").toggleAttribute("hidden", !paused);
-  });
-
   group.addEventListener("focusin", ({ target }) => {
     if (!target.matches("a:focus-visible")) return;
     closeSuggest();
@@ -1102,7 +1094,6 @@ function initSearchShortcuts() {
   });
 
   shortcuts.classList.add("is-ticker");
-  pause.hidden = false;
 }
 
 initSearchShortcuts();

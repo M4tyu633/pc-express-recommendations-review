@@ -38,11 +38,10 @@ body.v2 { padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe
 .v2 .shop-logo { grid-area:logo; min-width:0; }
 .v2 .shop-logo img { width:clamp(170px, 17vw, 232px); max-width:100%; height:auto; display:block; }
 .v2 .shop-search { grid-area:search; display:flex; height:38px; border:1px solid var(--blue); border-radius:4px; overflow:hidden; }
-.v2 .search-shortcuts { grid-area:shortcuts; display:grid; grid-template-columns:minmax(0, 1fr) auto; align-items:center; gap:6px; }
-.v2 .shortcut-window { grid-column:1; grid-row:1; min-width:0; }
+.v2 .search-shortcuts { grid-area:shortcuts; min-width:0; }
 .v2 .shortcut-track, .v2 .shortcut-group { display:flex; align-items:center; }
 .v2 .shortcut-group { flex:1; flex-wrap:wrap; }
-.v2 .shortcut-group[aria-hidden="true"], .v2 .shortcut-pause { display:none; }
+.v2 .shortcut-group[aria-hidden="true"] { display:none; }
 .v2 .shortcut-group a { display:grid; place-items:center; flex:1 0 auto; min-width:0; min-height:36px; padding:0 8px; border-radius:4px; color:var(--sub); font-size:12px; font-weight:700; text-decoration:none; white-space:nowrap; }
 .v2 .is-ticker .shortcut-group a { flex-basis:60px; padding-inline:4px; }
 .v2 .shortcut-group a .logo { width:100%; }
@@ -52,17 +51,14 @@ body.v2 { padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe
 .v2 .shortcut-group a .logo-business small { font-size:7px; letter-spacing:0; }
 .v2 .shortcut-group a:is(:hover, :focus-visible, [aria-current]) { background:#eef3fc; color:var(--blue); }
 .v2 .shortcut-group a[aria-current] { box-shadow:inset 0 -2px var(--blue); }
-.v2 .shortcut-group a:focus-visible, .v2 .shortcut-pause:focus-visible { outline-offset:-2px; }
-.v2 .shortcut-pause { grid-column:2; grid-row:1; place-items:center; width:28px; min-height:30px; padding:0; border:0; border-radius:4px; background:transparent; color:var(--sub); }
-.v2 .shortcut-pause:is(:hover, :focus-visible) { background:#eef3fc; color:var(--blue); }
+.v2 .shortcut-group a:focus-visible { outline-offset:-2px; }
 @media (min-width:761px) and (prefers-reduced-motion:no-preference) {
   .v2 .search-shortcuts.is-ticker .shortcut-window { overflow:clip; mask-image:linear-gradient(to right, transparent, #000 8px, #000 calc(100% - 10px), transparent); }
   .v2 .search-shortcuts.is-ticker .shortcut-track { width:max-content; animation:shortcut-ticker 90s linear infinite; }
   .v2 .search-shortcuts.is-ticker .shortcut-group { flex:none; flex-wrap:nowrap; }
   .v2 .search-shortcuts.is-ticker .shortcut-group[aria-hidden="true"] { display:flex; }
   .v2 .search-shortcuts.is-ticker .shortcut-group a { flex:0 0 108px; }
-  .v2 .search-shortcuts.is-ticker .shortcut-pause { display:grid; }
-  .v2 .search-shortcuts:is(.is-paused, :has(.shortcut-group a:focus-visible)) .shortcut-track { animation-play-state:paused; }
+  .v2 .search-shortcuts:has(.shortcut-group a:focus-visible) .shortcut-track { animation-play-state:paused; }
   .v2 .shortcut-group a .logo { transition:transform .18s ease; }
   .v2 .shortcut-group a:is(:hover, :focus-visible, [aria-current]) .logo { transform:translateY(-1px) scale(1.05); }
   .v2 .shortcut-group a:active .logo { transform:scale(.97); }
