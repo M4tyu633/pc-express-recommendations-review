@@ -162,8 +162,9 @@
 .v2 .brand-tile .logo-nvidia img { max-height:22px; } .v2 .brand-tile .logo-amd img { max-height:20px; }
 .v2 .brand-tile .logo-msi img { max-height:22px; } .v2 .brand-tile .logo-taiwan-excellence img { max-width:min(104px, 100%); max-height:30px; }
 .v2 .brand-tile .logo-asus img { max-height:26px; } .v2 .brand-tile .logo-asus-agent img { max-height:30px; }
-.v2 .brand-tile .logo-business img { max-height:18px; }
+.v2 .brand-tile .logo-business img { max-height:22px; }
 .v2 .logo small { font-size:8.5px; color:#8a919e; }
+.v2 .logo-business small { color:var(--sub); font-size:9px; letter-spacing:0; text-transform:none; text-align:center; white-space:normal; }
 
 /* Header: icon tools with count badges (Shopee/Lazada pattern) */
 .v2 .header-tools { gap:6px !important; }

@@ -39,6 +39,7 @@ body.v2 { padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe
 .v2 .shop-logo img { width:clamp(170px, 17vw, 232px); max-width:100%; height:auto; display:block; }
 .v2 .shop-search { grid-area:search; display:flex; height:38px; border:1px solid var(--blue); border-radius:4px; overflow:hidden; }
 .v2 .search-shortcuts { grid-area:shortcuts; min-width:0; }
+.v2:has(#stage-slot .brand-wall) .search-shortcuts { display:none; }
 .v2 .shortcut-track, .v2 .shortcut-group { display:flex; align-items:center; }
 .v2 .shortcut-group { flex:1; flex-wrap:wrap; }
 .v2 .shortcut-group[aria-hidden="true"] { display:none; }
@@ -48,7 +49,6 @@ body.v2 { padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe
 .v2 .shortcut-group a .logo img { max-width:100%; max-height:19px; }
 .v2 .shortcut-group a :is(.logo-taiwan-excellence, .logo-asus-agent) img { max-height:24px; }
 .v2 .shortcut-group a .logo-business img { max-height:16px; }
-.v2 .shortcut-group a .logo-business small { color:inherit; font-size:9px; letter-spacing:0; text-transform:none; text-align:center; white-space:normal; }
 .v2 .shortcut-group a .logo-mini-pc { flex-direction:row; gap:4px; color:var(--blue); font-size:11px; }
 .v2 .shortcut-group a .logo-mini-pc svg { flex:none; }
 .v2 .shortcut-group a:is(:hover, :focus-visible, [aria-current]) { background:#eef3fc; color:var(--blue); }
@@ -71,6 +71,11 @@ body.v2 { padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe
 }
 @media (min-width:761px) and (max-width:1180px) {
   .v2 .shop-header { grid-template-areas:"logo search tools" "shortcuts shortcuts shortcuts"; }
+}
+@media (min-width:761px) {
+  .v2:has(#stage-slot .brand-wall) .shop-header { grid-template-areas:"logo search tools"; gap:clamp(16px, 2.4vw, 32px); padding-block:12px; }
+  .v2:has(#stage-slot .brand-wall) .shop-logo img { width:clamp(160px, 16vw, 204px); }
+  .v2:has(#stage-slot .brand-wall) .shop-search { height:42px; }
 }
 @media (min-width:761px) and (max-width:820px) {
   .v2 .shop-header { width:calc(100% - 24px); }
