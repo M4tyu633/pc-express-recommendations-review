@@ -233,7 +233,7 @@ function offerSide() {
   const live = offers.filter(o => offerStatus(o) === "live").sort((a, b) => a.end.localeCompare(b.end));
   const o = live[0];
   if (!o) return '<a class="side-tile offer" href="#offers"><div><p class="kicker">Partner offers</p><p>See current offers</p></div></a>';
-  return '<a class="side-tile offer" href="#offer/' + o.id + '"><div><p><b>' + esc(o.benefit) + '</b></p><p class="fine">Valid until ' + fmtDate(o.end) + '</p><span class="pane-cta">Shop ' + o.items.length + ' eligible models <span aria-hidden="true">›</span></span></div>' +
+  return '<a class="side-tile offer" href="#offer/' + o.id + '"><div><p><b>' + esc(o.benefit) + '</b></p><p class="fine">Valid until ' + fmtDate(o.end) + '</p><span class="pane-cta">Shop offer <span aria-hidden="true">›</span></span></div>' +
     '<img class="side-art" src="/pcx-assets/' + esc(o.art) + '" alt="" width="1440" height="480"></a>';
 }
 function stage() {
@@ -283,10 +283,10 @@ function brandsPage() {
     '<a class="brand-tile" href="#partner/' + key + '" style="--brand:' + color + '" aria-label="' + esc(name) + '">' + wordmark(key) + '<span class="tile-name">' + esc(name) + '</span></a>').join("") + '</div>';
 }
 function offerTile(o) {
-  const n = o.items.length, st = offerStatus(o);
-  return '<article class="offer-tile ' + st + '"><a class="offer-art" href="#offer/' + o.id + '"><img src="/pcx-assets/' + esc(o.art) + '" alt="" width="1440" height="480" loading="lazy"></a><div>' +
+  const st = offerStatus(o);
+  return '<article class="offer-tile"><a class="offer-art" href="#offer/' + o.id + '" aria-label="' + esc(o.title) + '"><img src="/pcx-assets/' + esc(o.art) + '" alt="" width="1440" height="480" loading="lazy"></a><div>' +
     '<h3>' + esc(o.title) + '</h3><p>' + esc(o.benefit) + '</p><p class="fine">' + (st === "live" ? "Valid until " + fmtDate(o.end) : "Starts " + fmtDate(o.start)) + '</p>' +
-    '<a class="primary" href="#offer/' + o.id + '">' + (st === "live" ? "Shop " + n + " eligible models" : "Preview " + n + " models") + '</a></div></article>';
+    '<a class="offer-link" href="#offer/' + o.id + '">' + (st === "live" ? "Shop offer" : "Preview offer") + chevron(1) + '</a></div></article>';
 }
 function shelfArrows(title) {
   return '<div class="shelf-arrows" role="group" aria-label="' + esc(title) + ' products" hidden>' +
