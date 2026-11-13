@@ -123,9 +123,6 @@ function priceLine(p, s = p.status) {
   if (s === "restock") return '<p class="price">' + money(p.pricePhp) + ' <small>when back in stock</small></p>';
   return '<p class="price">' + money(p.pricePhp) + '</p>';
 }
-function offerBadges(p) {
-  return liveOffersFor(p.id).map(o => '<a class="offer-badge" href="#offer/' + o.id + '">' + esc(o.partner) + ' offer · ends ' + fmtDate(o.end).replace(/, \d{4}$/, "") + '</a>').join("");
-}
 function actionButton(p, s = p.status, variant = "") {
   const saved = s === "restock" && alerts.has(p.id + "/" + variant);
   return '<button class="primary act-' + s + '" type="button" data-action="' + s + '" data-id="' + p.id + '" data-variant="' + variant + '"><span>' + (saved ? "Alert saved" : STATE[s].action) + '</span></button>';
@@ -152,9 +149,10 @@ function card(p, opts = {}) {
   const promo = liveOffersFor(p.id)[0];
   return '<article class="shop-card" data-state="' + p.status + '"><a class="card-art" href="#product/' + p.id + '">' + image(p) + '</a>' +
     '<div class="card-info"><h3><a href="#product/' + p.id + '">' + esc(p.name) + '</a></h3>' +
-    '<p class="price">' + money(p.pricePhp) + (p.status === "quote" ? ' <small>last listed</small>' : '') + '</p>' +
+    '<div class="card-price-line"><p class="price">' + money(p.pricePhp) + (p.status === "quote" ? ' <small>last listed</small>' : '') + '</p>' +
+    (promo ? '<span class="card-offer">' + esc(promo.cardBenefit) + '</span>' : '') + '</div>' +
     '<p class="meta"><span class="' + availClass(p) + '">' + availText(p) + '</span>' + (p.paidOrdersLast30Days ? '<span class="sold">' + p.paidOrdersLast30Days + ' sold</span>' : '') + '</p>' +
-    (promo ? '<a class="card-offer" href="#offer/' + promo.id + '">' + esc(promo.cardBenefit) + '</a>' : '') + (opts.note ? '<p class="rec-note">' + esc(opts.note) + '</p>' : '') +
+    (opts.note ? '<p class="rec-note">' + esc(opts.note) + '</p>' : '') +
     '<div class="button-row">' + actionButton(p) + compareButton(p) + '</div></div></article>';
 }
 const grid = (items, opts) => '<div class="shop-grid">' + items.map(p => card(p, opts?.(p))).join("") + '</div>';
@@ -562,26 +560,30 @@ function details(p, variant = "") {
   const s = hasVariants && variant === "complete" ? "restock" : p.status;
   const price = hasVariants && variant === "complete" ? { ...p, pricePhp: p.pricePhp + 4605 } : p;
   const next = {
-    buy: "Ships from PC Express. Choose delivery or pickup in the cart.",
-    quote: "Listed for ordering. Sales confirms price, stock allocation and lead time" + (leadTime[p.id] ? " (usually " + leadTime[p.id] + ")" : "") + " before you pay.",
-    price: "High demand. Sales sends today’s price and allocation. No payment until you accept.",
-    check: "Online stock is low. Sales confirms the nearest branch or pickup option.",
-    restock: "Get one alert for this exact configuration when it is back. Or choose a ready-to-ship alternative below.",
+    buy: "Sales confirms stock and your total before you pay.",
+    quote: "Sales confirms the price and lead time before payment.",
+    price: "Ask Sales for today’s price and availability.",
+    check: "Ask Sales to check online and branch stock.",
+    restock: "Get an alert when this configuration is back.",
   }[s];
   const rows = recs("product", p.id).sort((a, b) => s !== "buy" ? /similar/i.test(b.title) - /similar/i.test(a.title) : 0);
   const offersHere = liveOffersFor(p.id);
-  return breadcrumb(p.category) + '<section class="offer-layout v2"><div class="detail-art">' + image(p, true) + '</div><div class="offer-panel">' +
-    '<p class="kicker">' + (p.vendor === "PCX" ? '<img class="pdp-brand" src="/partner-assets/logos/pcx-desktop.png" alt="PCX Desktop" width="137" height="75">' : esc(p.vendor)) + (modelCode(p) ? ' · Model ' + esc(modelCode(p)) : '') + '</p><h1>' + esc(p.name) + '</h1>' +
-    '<div class="buy-box">' + priceLine(price, s) +
-    '<dl class="pdp-rows"><div><dt><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M4 8l8-4 8 4v8l-8 4-8-4z M4 8l8 4 8-4 M12 12v8"/></svg>Availability</dt><dd><span class="' + availClass(p, s) + '">' + (s === "buy" || s === "check" ? availText(p, s) : STATE[s].label) + '</span>' + (p.paidOrdersLast30Days ? '<span class="sold">' + p.paidOrdersLast30Days + ' sold in 30 days</span>' : '') + '</dd></div>' +
-    '<div><dt><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M3 6h11v9H3z M14 9h4l3 3v3h-7z"/><circle cx="7" cy="17" r="1.6"/><circle cx="17" cy="17" r="1.6"/></svg>Delivery</dt><dd>Metro Manila 1–3 business days<small>Provincial 3–7 business days</small></dd></div>' +
-    '<div><dt><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M4 9l1.5-4h13L20 9 M4 9h16v10H4z M9 19v-5h6v5"/></svg>Pickup</dt><dd>PC Express Online Paterno<small>After Sales confirms your order</small></dd></div>' +
-    '<div><dt><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M3 6h18v12H3z M3 10h18 M7 15h4"/></svg>Payment</dt><dd>iPay88, BDO link or bank transfer<small>Pay after Sales confirms. No charge before that.</small></dd></div>' +
-    '<div><dt><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z M9 12l2 2 4-4"/></svg>Warranty</dt><dd>Official PC Express warranty</dd></div></dl>' +
+  const model = modelCode(p);
+  const brand = p.vendor === "PCX" ? wordmark("pcx-desktop") : esc(p.vendor);
+  return breadcrumb(p.category) + '<section class="offer-layout v2">' +
+    '<header class="product-heading"><h1>' + esc(p.name) + '</h1>' +
+    '<p class="product-model">' + brand + (model && !p.name.includes(model) ? ' · ' + esc(model) : '') + '</p></header>' +
+    '<div class="detail-art">' + image(p, true) + '</div><div class="offer-panel buy-box">' +
+    '<div class="product-price">' + priceLine(price, s) + '<p class="product-stock"><span class="' + availClass(p, s) + '">' + availText(p, s) + '</span>' +
+    (p.paidOrdersLast30Days ? '<span>' + p.paidOrdersLast30Days + ' sold</span>' : '') + '</p></div>' +
+    offersHere.map(o => '<a class="product-offer" href="#offer/' + o.id + '"><span><strong>' + esc(o.cardBenefit) + '</strong><small>' + esc(o.partner) + ' offer · Ends ' + fmtDate(o.end) + '</small></span>' + chevron(1) + '</a>').join("") +
     (hasVariants ? '<label>Package <select id="variant-select"><option value="desktop">Desktop only · order basis</option><option value="complete"' + (variant === "complete" ? ' selected' : '') + '>Complete set · out of stock</option></select></label>' : '') +
-    '<p class="next-step">' + next + '</p><div class="button-row">' + actionButton(p, s, hasVariants ? (variant || "desktop") : "") + compareButton(p) + wishButton(p) + '</div>' +
-    offersHere.map(o => '<div class="offer-inline"><strong>' + esc(o.partner) + ' offer:</strong> ' + esc(o.benefit) + '. Ends ' + fmtDate(o.end) + '. <a href="#offer/' + o.id + '">How it works</a></div>').join("") +
-    '</div></div></section>' +
+    '<div class="button-row">' + actionButton(p, s, hasVariants ? (variant || "desktop") : "") + compareButton(p) + wishButton(p) + '</div>' +
+    '<p class="next-step">' + next + '</p>' +
+    (s === "buy" ? '<dl class="product-fulfillment"><div><dt>Delivery</dt><dd>Metro Manila 1–3 business days<small>Provincial 3–7 business days</small></dd></div>' +
+      '<div><dt>Store pickup</dt><dd>PC Express Online Paterno<small>After Sales confirms your order</small></dd></div></dl>' : '') +
+    '<details class="product-policies"><summary>Payment and warranty</summary><dl><div><dt>Payment</dt><dd>iPay88, BDO link or bank transfer after Sales confirms your order.</dd></div>' +
+    '<div><dt>Warranty</dt><dd>Official PC Express warranty.</dd></div></dl></details></div></section>' +
     '<section class="shelf"><h2>Key specifications</h2><dl class="spec-list">' + specRows(p).map(([n, v]) => '<div><dt>' + esc(n) + '</dt><dd>' + esc(v) + '</dd></div>').join("") + '</dl>' +
     (specs[p.id]?.chip ? '<p class="muted small">Length, connector and PSU values are sample fields. Production uses verified manufacturer data.</p>' : '') + '</section>' +
     rows.map(pl => recRow(pl, { title: /similar/i.test(pl.title) && s !== "buy" ? "Ready to ship instead" : undefined })).join("");
@@ -855,7 +857,11 @@ document.addEventListener("click", e => {
   else if (kind === "wish" && p) {
     const i = memory.wish.indexOf(id);
     if (i >= 0) memory.wish.splice(i, 1); else memory.wish.unshift(id);
-    saveMemory(); t.outerHTML = wishButton(p); syncChrome(route().parts[0]);
+    const saved = i < 0;
+    t.setAttribute("aria-pressed", String(saved));
+    t.setAttribute("aria-label", saved ? "Remove from wishlist" : "Add to wishlist");
+    t.querySelector("path").setAttribute("fill", saved ? "currentColor" : "none");
+    saveMemory(); syncChrome(route().parts[0]);
     toast(i >= 0 ? "Removed from your wishlist." : "Saved to your wishlist.");
     if (route().parts[0] === "wishlist") render();
   }

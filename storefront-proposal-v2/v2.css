@@ -165,7 +165,6 @@
 .v2 .state { align-self:flex-start; display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--c); background:none; padding:0; }
 .v2 .state::before { content:""; width:8px; height:8px; border-radius:50%; background:var(--c); flex:none; }
 .v2 .state.buy { --c:#0b7a3e; } .v2 .state.quote { --c:#0b45a8; } .v2 .state.check { --c:#6d3fc0; } .v2 .state.price { --c:#a15c00; } .v2 .state.restock { --c:#c0182a; }
-.v2 .offer-badge { align-self:flex-start; font-size:11px; font-weight:700; color:#8a4b00 !important; background:#fff4dc; border:1px solid #f1d9a6; padding:2px 6px; border-radius:3px; text-decoration:none; }
 
 /* Offers */
 .v2 .offer-tiles { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px; }
@@ -228,16 +227,39 @@
 .v2 .shopping-empty-actions .text-link { display:inline-flex; align-items:center; min-height:44px; }
 
 /* Product page */
-.v2 .offer-layout.v2 { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:24px; align-items:start; }
-.v2 .offer-layout.v2 .detail-art { background:#fff; border:1px solid var(--line); border-radius:6px; padding:16px; }
-.v2 .offer-layout.v2 .detail-art img { width:100%; height:auto; }
-.v2 .offer-layout.v2 h1 { font-size:24px; }
-.v2 .buy-box { background:#fff; border:1px solid var(--line); border-radius:6px; padding:16px; display:flex; flex-direction:column; gap:10px; }
-.v2 .buy-box .price { font-size:26px; }
-.v2 .buy-box label { display:grid; gap:4px; font-weight:700; font-size:13px; }
+.v2 .offer-layout.v2 {
+  display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.15fr);
+  grid-template-areas:"photo title" "photo purchase"; grid-template-rows:auto 1fr;
+  gap:16px clamp(20px, 4vw, 48px); align-items:start;
+  background:#fff; border:1px solid var(--line); border-radius:6px; padding:clamp(16px, 3vw, 36px);
+}
+.v2 .product-heading { grid-area:title; }
+.v2 .offer-layout.v2 h1 { margin:0; font-size:clamp(20px, 2.2vw, 27px); line-height:1.3; }
+.v2 .product-model { margin:8px 0 0; color:var(--sub); font-size:13px; }
+.v2 .offer-layout.v2 .detail-art { grid-area:photo; border:0; width:100%; justify-self:center; }
+.v2 .offer-layout.v2 .detail-art img { display:block; width:100%; height:auto; }
+.v2 .buy-box { grid-area:purchase; display:grid; gap:12px; }
+.v2 .buy-box .price { margin:0; font-size:clamp(27px, 3vw, 36px); line-height:1.15; font-weight:600; }
+.v2 .buy-box .price small { display:block; margin-top:4px; color:var(--sub); font-size:13px; font-weight:400; }
+.v2 .product-stock { display:flex; flex-wrap:wrap; gap:4px 12px; align-items:baseline; margin:7px 0 0; color:var(--sub); font-size:13px; }
+.v2 .product-offer { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:9px 0; border-block:1px solid var(--line); text-decoration:none; color:var(--ink); }
+.v2 .product-offer strong { font-size:14px; font-weight:600; }
+.v2 .product-offer small { display:block; margin-top:2px; color:var(--sub); font-size:12px; }
+.v2 .product-offer svg { flex:none; color:var(--blue); }
+.v2 .product-offer:is(:hover, :focus-visible) strong { color:var(--blue); text-decoration:underline; text-underline-offset:3px; }
+.v2 .product-fulfillment, .v2 .product-policies dl { display:grid; gap:10px; margin:0; font-size:14px; }
+.v2 .product-fulfillment { grid-template-columns:repeat(2, minmax(0, 1fr)); padding-top:12px; border-top:1px solid var(--line); }
+.v2 .product-fulfillment dt, .v2 .product-policies dt { font-weight:600; margin-bottom:3px; }
+.v2 .product-fulfillment dd, .v2 .product-policies dd { margin:0; color:var(--sub); }
+.v2 .product-fulfillment small { display:block; margin-top:2px; font-size:12px; }
+.v2 .product-policies { border-top:1px solid var(--line); padding-top:10px; font-size:13px; }
+.v2 .product-policies summary { width:fit-content; color:var(--blue); cursor:pointer; }
+.v2 .product-policies dl { margin-top:10px; }
+.v2 .buy-box label { display:grid; gap:4px; margin:0; font-weight:700; font-size:13px; }
 .v2 .buy-box select { border:1px solid #c5ccd8; border-radius:4px; padding:9px; font-weight:400; }
-.v2 .buy-box .button-row { display:grid; grid-template-columns:1fr auto; gap:8px; }
-.v2 .next-step { margin:0; color:var(--sub); }
+.v2 .buy-box .button-row { display:grid; grid-template-columns:minmax(0, 1fr) auto auto; align-items:center; gap:8px; margin:0; }
+.v2 .buy-box .button-row .primary { min-height:44px; padding-inline:8px; }
+.v2 .next-step { margin:0; color:var(--sub); font-size:13px; }
 .v2 .offer-inline { background:#fff8eb; border:1px solid #f1d9a6; border-radius:4px; padding:8px 10px; margin:0; font-size:14px; color:#5c3a00; }
 .v2 .assurances { list-style:none; padding:10px 0 0; margin:2px 0 0; border-top:1px solid var(--line); display:grid; gap:7px; font-size:14px; color:var(--sub); }
 .v2 .assurances strong { display:inline-block; width:80px; color:var(--ink); }
@@ -368,10 +390,8 @@
   .v2 .campaign-banner.v2 { grid-template-columns:1fr; }
   .v2 .campaign-products { width:min(100%, 360px); justify-self:start; }
   .v2 #eligible-models .shop-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
-  .v2 .offer-layout.v2 { display:flex; flex-direction:column; gap:14px; }
-  .v2 .offer-layout.v2 .offer-panel { order:-1; }
-  .v2 .offer-layout.v2 .detail-art { max-width:240px; align-self:center; padding:8px; }
-  .v2 .offer-layout.v2 h1 { font-size:20px; }
+  .v2 .offer-layout.v2 { grid-template-columns:minmax(0, 1fr); grid-template-areas:"title" "photo" "purchase"; grid-template-rows:auto; gap:14px; }
+  .v2 .offer-layout.v2 .detail-art { max-width:230px; }
   .v2 .mobile-bar:not([hidden]) { display:flex; position:fixed; bottom:0; left:0; right:0; z-index:30; gap:10px; align-items:center; justify-content:space-between; background:#fff; border-top:1px solid var(--line); box-shadow:0 -6px 18px #1a1f2b1f; padding:10px 14px; }
   .v2 .mobile-bar > div { display:grid; gap:2px; }
   .v2 .mobile-bar strong { font-size:18px; color:var(--red); }
@@ -426,7 +446,6 @@
 /* Units left and recommendation notes */
 .v2 .avail.s-buy.low { color:#c2410c; }
 .v2 .rec-note { margin:2px 0 0; font-size:12px; color:#5b6472; }
-.v2 .buy-box .avail { margin:2px 0 6px; font-size:14px; }
 .v2 .compare-table small { font-weight:600; color:#0b7a3e; }
 .v2 .cart-addons { margin-top:18px; padding:16px 18px; background:#fff; border:1px solid #dfe3ea; border-radius:8px; }
 .v2 .cart-addons h2 { margin:0; font-size:18px; }
