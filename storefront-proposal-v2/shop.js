@@ -212,11 +212,11 @@ function stagePane([key, name, color, slide, head, copy, items], i) {
   const lazy = i ? ' loading="lazy"' : ' fetchpriority="high"';
   const attrs = ' href="#partner/' + key + '" style="--brand:' + color + '" data-key="' + key + '"' + (i ? ' aria-hidden="true" tabindex="-1"' : '');
   if (slide && typeof slide === "object") {
-    return '<a class="pane art' + (i ? '' : ' is-active') + '"' + attrs + ' aria-label="' + esc(name) + ': ' + esc(slide.label) + '"><picture><source media="(max-width: 700px)" srcset="/partner-assets/' + (slide.m ?? slide.d) + '"><img src="/partner-assets/' + slide.d + '" alt="" width="1800" height="600"' + lazy + '></picture></a>';
+    return '<a class="pane art' + (i ? '' : ' is-active') + '"' + attrs + ' aria-label="' + esc(name) + ': ' + esc(slide.label) + '"><img src="/partner-assets/' + slide.d + '" alt="" width="1800" height="600"' + lazy + '></a>';
   }
   if (slide !== null && slide !== undefined) {
     const s = data.slides[slide];
-    return '<a class="pane art' + (i ? '' : ' is-active') + '"' + attrs + ' aria-label="' + esc(name) + ': ' + esc(s.label) + '"><picture><source media="(max-width: 700px)" srcset="/pcx-assets/' + esc(s.mobile) + '"><img src="/pcx-assets/' + esc(s.desktop) + '" alt="" width="1440" height="480"' + lazy + '></picture></a>';
+    return '<a class="pane art' + (i ? '' : ' is-active') + '"' + attrs + ' aria-label="' + esc(name) + ': ' + esc(s.label) + '"><img src="/pcx-assets/' + esc(s.desktop) + '" alt="" width="1440" height="480"' + lazy + '></a>';
   }
   return '<a class="pane panel' + (i ? '' : ' is-active') + '"' + attrs + ' aria-label="' + esc(name) + '"><div class="panel-copy">' + wordmark(key) +
     '<h2>' + esc(head) + '</h2><p>' + esc(copy) + '</p>' + cta + '</div><div class="panel-products">' +
@@ -240,6 +240,7 @@ function stage() {
     '<button class="stage-arrow prev" type="button" data-stage="-1" aria-label="Previous partner">' + chevron(-1) + '</button>' +
     '<button class="stage-arrow next" type="button" data-stage="1" aria-label="Next partner">' + chevron(1) + '</button>' +
     '<div class="stage-dots">' + rotation.map(([k, n], i) => '<button type="button" data-stage-go="' + i + '" aria-label="Show ' + esc(n) + '"' + (i ? '' : ' aria-current="true"') + '></button>').join("") +
+    '<span class="stage-count">1 / ' + rotation.length + '</span>' +
     '<button class="stage-pause" type="button" data-stage="pause" aria-label="Pause rotation"><span aria-hidden="true">❚❚</span></button></div></div>' +
     '<div class="stage-side">' + teTile() + offerSide() + '</div></div>' +
     '<nav class="brand-wall" aria-label="Our brand partners">' + stagePartners.map(([key, name, color]) =>
@@ -260,6 +261,7 @@ function showPartner(i) {
   const key = rotation[stageIndex][0];
   panels.forEach((p, n) => { const on = n === stageIndex; p.classList.toggle("is-active", on); p.toggleAttribute("aria-hidden", !on); p.tabIndex = on ? 0 : -1; });
   root.querySelectorAll(".stage-dots [data-stage-go]").forEach((b, n) => b.toggleAttribute("aria-current", n === stageIndex));
+  root.querySelector(".stage-count").textContent = (stageIndex + 1) + " / " + rotation.length;
   root.querySelectorAll(".brand-tile").forEach(b => b.classList.toggle("is-live", b.dataset.key === key));
   heroViews[key]++;
   restartStage();
@@ -495,13 +497,18 @@ function partnerPage(key, focus) {
 }
 
 // ---------- Search and filters ----------
+const compactFilters = matchMedia("(max-width: 900px)");
+compactFilters.addEventListener("change", event => {
+  const panel = document.querySelector(".filter-panel");
+  if (panel) panel.open = !event.matches;
+});
 function browse(kind, keyword, preset) {
   const heading = keyword ? "Results for “" + keyword + "”" : categories.find(([id]) => id === kind)?.[1] ?? "All products";
   const pool = products.filter(p => !kind || p.kind === kind || (kind === "laptops" && p.kind === "laptop"));
   const brands = [...new Set(pool.map(p => p.vendor))].sort();
   const gpu = kind === "gpu" || /rtx|gpu|graphics|radeon|rx\s?\d/i.test(keyword);
   const facet = (name, value, label) => '<label class="check"><input type="checkbox" name="' + name + '" value="' + esc(value) + '"' + (preset?.[name]?.includes(value) ? ' checked' : '') + '> ' + label + ' <span class="count" data-count="' + name + ':' + esc(value) + '"></span></label>';
-  return breadcrumb(keyword ? "Search" : heading) + '<h1>' + esc(heading) + '</h1><div class="browse-layout"><form id="filters" class="filters v2" aria-label="Filter products">' +
+  return breadcrumb(keyword ? "Search" : heading) + '<h1>' + esc(heading) + '</h1><div class="browse-layout"><details class="filter-panel"' + (compactFilters.matches ? '' : ' open') + '><summary>Filters and sort <span id="filter-count"></span></summary><form id="filters" class="filters v2" aria-label="Filter products">' +
     '<div class="filter-head"><h2>Filters</h2><button type="reset" class="link">Clear</button></div>' +
     '<fieldset><legend>Availability</legend>' + Object.keys(STATE).map(s => facet("state", s, STATE[s].label)).join("") + '</fieldset>' +
     '<fieldset><legend>Brand</legend>' + brands.map(b => facet("brand", b, esc(b))).join("") + '</fieldset>' +
@@ -511,7 +518,7 @@ function browse(kind, keyword, preset) {
       '<fieldset><legend>Refresh rate</legend>' + facet("hz", "144", "144 Hz+") + facet("hz", "180", "180 Hz+") + '</fieldset>' : '') +
     '<fieldset><legend>Price</legend><label>Up to (₱) <input name="budget" type="number" min="1" max="10000000" placeholder="No limit"></label></fieldset>' +
     '<label>Sort <select name="sort"><option value="">Best match · ready to ship first</option><option value="price">Price: low to high</option><option value="popular">Most ordered (30 days)</option></select></label>' +
-    '</form><section><div class="result-bar"><p id="result-count" class="result-count" aria-live="polite"></p><div id="active-filters" class="active-filters"></div></div><div id="exact"></div><div id="results"></div></section></div>';
+    '</form></details><section><div class="result-bar"><p id="result-count" class="result-count" aria-live="polite"></p><div id="active-filters" class="active-filters"></div></div><div id="exact"></div><div id="results"></div></section></div>';
 }
 function matches(p, values, skip) {
   const has = (k, v) => !values.getAll(k).length || skip === k || values.getAll(k).includes(v);
@@ -542,7 +549,9 @@ function filterProducts(kind, keyword) {
     el.closest("label").classList.toggle("zero", n === 0);
   }
   document.querySelector("#result-count").textContent = picked.length + (picked.length === 1 ? " product" : " products");
-  document.querySelector("#active-filters").innerHTML = [...values.entries()].filter(([k, v]) => v && k !== "sort").map(([k, v]) =>
+  const activeFilters = [...values.entries()].filter(([k, v]) => v && k !== "sort");
+  document.querySelector("#filter-count").textContent = activeFilters.length ? "(" + activeFilters.length + " active)" : "";
+  document.querySelector("#active-filters").innerHTML = activeFilters.map(([k, v]) =>
     '<span>' + esc(k === "state" ? STATE[v].label : k === "budget" ? "Up to ₱" + v : k === "maxlen" ? "≤ " + v + " mm" : v) + '</span>').join("");
   document.querySelector("#exact").innerHTML = exact ? '<div class="exact-match"><p class="kicker">Exact model match · shown even when not in stock</p>' + grid([exact]) + '</div>' : "";
   document.querySelector("#results").innerHTML = picked.length ? grid(picked) : '<div class="empty"><h2>No exact matches</h2><p>Remove a filter, or ask Sales to source this model for you.</p><button type="button" class="primary" data-action="source" data-id="desktop-in">Ask Sales to source it</button></div>';
@@ -605,7 +614,7 @@ function comparePage(sample) {
     ["Offers", list.map(p => liveOffersFor(p.id).map(o => esc(o.partner) + " · " + esc(o.benefit)).join("<br>") || "—")],
     ...labels.map(l => [l, list.map(p => esc(specRows(p).find(([n]) => n === l)?.[1] ?? "—"))])];
   return breadcrumb("Compare") + '<h1>Compare ' + list.length + ' products</h1><div class="compare-tools"><label class="check"><input type="checkbox" id="diff-only"> Show only differences</label><span class="muted">' + (sample ? "Sample comparison" : "Your selection") + ' · up to 4</span></div>' +
-    '<div class="compare-scroll" tabindex="0"><table class="compare-table v2"><thead><tr><th scope="col">Product</th>' + list.map(p => '<th scope="col"><a href="#product/' + p.id + '">' + image(p) + esc(p.name) + '</a></th>').join("") + '</tr></thead><tbody>' +
+    '<div class="compare-scroll" tabindex="0" role="region" aria-label="Product comparison table"><table class="compare-table v2"><thead><tr><th scope="col">Product</th>' + list.map(p => '<th scope="col"><a href="#product/' + p.id + '">' + image(p) + esc(p.name) + '</a></th>').join("") + '</tr></thead><tbody>' +
     rows.map(([l, cells]) => { const same = cells.every(c => c === cells[0]); return '<tr class="' + (same ? 'same' : 'differs') + '"><th scope="row">' + esc(l) + '</th>' + cells.map(c => '<td>' + c + '</td>').join("") + '</tr>'; }).join("") +
     '<tr><th scope="row">Next step</th>' + list.map(p => '<td>' + actionButton(p) + '</td>').join("") + '</tr></tbody></table></div>';
 }
@@ -929,6 +938,12 @@ function renderSuggest() {
 }
 let suggestIndex = -1;
 function closeSuggest() { suggest.hidden = true; query.setAttribute("aria-expanded", "false"); query.removeAttribute("aria-activedescendant"); }
+const compactSearch = matchMedia("(max-width: 760px)");
+function setSearchPlaceholder() {
+  query.placeholder = compactSearch.matches ? "Search products" : "Search products, brands or model numbers";
+}
+compactSearch.addEventListener("change", setSearchPlaceholder);
+setSearchPlaceholder();
 query.addEventListener("focus", renderSuggest);
 query.addEventListener("input", renderSuggest);
 query.addEventListener("keydown", e => {
@@ -962,6 +977,7 @@ const allGroups = [
   ["Gaming Devices & Accessories", [["Gaming laptops", "#search/gaming laptop"], ["Gaming headsets", "#search/gaming"], ["Gaming mice", "#search/g102"], ["Gaming keyboards", "#search/g213"]]],
   ["Desktop PCs", "#shop/desktop"], ["Laptops", "#shop/laptops"], ["Power Station", "#search/power station"],
   ["Business Solutions", "#partner/business"], ["Software", "#search/software"], ["All Products", "#shop"],
+  ["Pricelists", "#help"], ["Laptop Sale!", "#offer/laptop-bundle"],
 ];
 allMenu.innerHTML = '<ul>' + allGroups.map(([label, to], i) => Array.isArray(to)
   ? '<li class="has-sub"><button type="button" class="am-row" data-sub="' + i + '">' + esc(label) + '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><ul class="am-sub">' +

@@ -127,7 +127,7 @@
 .v2 .logo-taiwan-excellence img { max-width:124px; max-height:34px; }
 .v2 .logo-asus img, .v2 .logo-asus-agent img { max-height:34px; }
 .v2 .logo-business img { max-height:22px; }
-.v2 .brand-tile .logo img { max-width:min(110px, 100%); }
+.v2 :is(.brand-tile, .bm-item) .logo { width:100%; min-width:0; }
 .v2 .lp-mark .logo img { max-width:100px; max-height:36px; }
 @media (max-width: 760px) { .v2 .logo img { max-width:76px; max-height:22px; } .v2 .logo small { font-size:8px; } }
 
@@ -151,11 +151,11 @@
 .v2 .card-price-line { display:flex; flex-wrap:wrap; align-items:baseline; gap:0 8px; }
 .v2 .shop-card .card-offer { font-size:12px; color:var(--sub); line-height:1.3; }
 /* Logo sizing, tuned per mark so they read the same weight */
-.v2 .brand-tile .logo img { max-width:96px; }
+.v2 .brand-tile .logo img { max-width:min(96px, 100%); }
 .v2 .brand-tile .logo-intel img { max-height:24px; } .v2 .brand-tile .logo-lenovo img { max-height:20px; }
 .v2 .brand-tile .logo-microsoft img { max-height:20px; } .v2 .brand-tile .logo-samsung img { max-height:15px; }
 .v2 .brand-tile .logo-nvidia img { max-height:22px; } .v2 .brand-tile .logo-amd img { max-height:20px; }
-.v2 .brand-tile .logo-msi img { max-height:22px; } .v2 .brand-tile .logo-taiwan-excellence img { max-width:104px; max-height:30px; }
+.v2 .brand-tile .logo-msi img { max-height:22px; } .v2 .brand-tile .logo-taiwan-excellence img { max-width:min(104px, 100%); max-height:30px; }
 .v2 .brand-tile .logo-asus img { max-height:26px; } .v2 .brand-tile .logo-asus-agent img { max-height:30px; }
 .v2 .brand-tile .logo-business img { max-height:18px; }
 .v2 .logo small { font-size:8.5px; color:#8a919e; }
@@ -225,14 +225,23 @@
   .v2 .main-nav > .frame > a, .v2 .main-nav :is(.cat-all, .nav-drop) { padding-inline:10px; font-size:13.5px; }
 }
 @media (max-width: 980px) {
-  .v2 .main-nav > .frame { overflow-x:auto; }
+  .v2 .main-nav > .frame { flex-wrap:wrap; }
   .v2 .main-nav .nav-spacer { display:none; }
 }
 @media (max-width: 760px) {
-  .v2 .main-nav > .frame > a, .v2 .main-nav :is(.cat-all, .nav-drop) { min-height:42px; font-size:13px; }
+  .v2 .main-nav > .frame { display:grid; grid-template-columns:1.5fr 1fr 1fr; }
+  .v2 .main-nav > .frame > a:not([href="#offers"]) { display:none; }
+  .v2 .main-nav > .frame > .nav-brands { grid-column:2; grid-row:1; }
+  .v2 .main-nav > .frame > a, .v2 .main-nav :is(.cat-all, .nav-drop) { width:100%; min-height:44px; padding-inline:6px; font-size:14px; }
   .v2 .bm-grid { grid-template-columns:repeat(3, minmax(0, 1fr)); }
   .v2 .bm-item { height:76px; }
   .v2 .bm-item .logo img { max-width:80px; max-height:22px; }
+  .v2 .brand-menu { max-height:min(65dvh, calc(100dvh - 160px)); overflow:auto; }
+  .v2 .shop-search input, .v2 .filters input[type=number], .v2 .filters select, .v2 .buy-box select,
+  .v2 #shop-dialog :is(input, select, textarea) { font-size:16px; }
+  .v2 .sg-line, .v2 .meta { flex-wrap:wrap; gap:2px 7px; }
+  .v2 .lp-nav { flex-wrap:wrap; gap:0 6px; }
+  .v2 .lp-nav button { min-height:44px; }
 }
 
 /* All Products dropdown */
@@ -260,7 +269,7 @@
 @media (max-width: 980px) {
   .v2 .main-nav { position:relative; }
   .v2 .nav-all { position:static; }
-  .v2 .all-menu { left:clamp(12px, 2.5vw, 20px); width:min(330px, calc(100vw - 40px)); max-height:70vh; overflow:auto; }
+  .v2 .all-menu { left:clamp(12px, 2.5vw, 20px); width:min(330px, calc(100% - 40px)); max-height:min(70dvh, calc(100dvh - 200px)); overflow:auto; }
 }
 /* Header tools as buttons, and the wishlist heart */
 .v2 .wish { display:grid; place-items:center; width:44px; height:44px; min-height:0; padding:0; border:1px solid #c5ccd8; border-radius:4px; background:#fff; color:#6b7280; cursor:pointer; }
@@ -294,6 +303,15 @@
 .v2 .main-nav .brand-menu .bm-item .logo img { max-width:min(110px, 100%); max-height:28px; }
 .v2 .main-nav .brand-menu .bm-more a { display:inline; font-size:13px; color:var(--ink); }
 .v2 .main-nav .brand-menu .bm-more a:hover { color:var(--blue); text-decoration:underline; }
+
+@media (max-width: 760px) {
+  .v2 .brand-wall .brand-tile { min-height:52px; padding:6px 8px; }
+  .v2 .brand-wall .brand-tile.is-live { border-color:#a3b8dc; box-shadow:none; background:#f5f8ff; }
+  .v2 .brand-wall .brand-tile .logo img { max-height:25px; }
+  .v2 .brand-wall .brand-tile .logo small { font-size:8px; text-align:center; }
+  .v2 .main-nav .brand-menu .bm-item { height:auto; min-height:76px; }
+  .v2 .main-nav .brand-menu .bm-item > span:last-child { overflow-wrap:anywhere; }
+}
 
 /* Interaction feedback follows the storefront's image zoom and sliding banners. */
 .v2 .card-art, .v2 .offer-art { display:block; overflow:hidden; }
