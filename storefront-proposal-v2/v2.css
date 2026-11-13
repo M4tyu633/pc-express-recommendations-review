@@ -339,7 +339,19 @@ body.v2 { padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe
 .v2 .pill { padding:2px 8px; border-radius:3px; font-size:12px; font-weight:700; text-transform:capitalize; }
 .v2 .pill.live { background:#e3f4ea; color:#0b6b39; } .v2 .pill.ended { background:#fde8ea; color:#a3172a; } .v2 .pill.upcoming { background:#fff1d6; color:#8a5300; }
 .v2 #demo-date { border:1px solid #c5ccd8; border-radius:4px; padding:6px; margin:0 0 10px 6px; }
-.v2 .review-list article, .v2 .help-grid section { background:#fff; border:1px solid var(--line); border-radius:6px; padding:16px; }
+.v2 .review-list article { background:#fff; border:1px solid var(--line); border-radius:6px; padding:16px; }
+.v2 .order-faq { max-width:760px; margin-inline:auto; }
+.v2 .order-faq h1 { margin-bottom:18px; }
+.v2 .faq-list { background:#fff; border:1px solid var(--line); border-radius:6px; }
+.v2 .faq-list details + details { border-top:1px solid var(--line); }
+.v2 .faq-list summary { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:14px 16px; min-height:48px; font-weight:600; cursor:pointer; list-style:none; }
+.v2 .faq-list summary::-webkit-details-marker { display:none; }
+.v2 .faq-list summary:focus-visible { outline-offset:-3px; }
+.v2 .faq-list summary svg { flex:none; color:var(--blue); }
+.v2 .faq-list details[open] summary svg { transform:rotate(90deg); }
+.v2 .faq-list details > div { padding:0 16px 16px; }
+.v2 .faq-list p { margin:0 0 8px; color:var(--sub); }
+.v2 .faq-list .text-link { white-space:normal; }
 
 /* Dialog, toast, footer */
 .v2 dialog { border:0; border-radius:8px; max-width:min(520px, calc(100vw - 24px)); padding:22px; color:var(--ink); box-shadow:0 20px 50px #0005; }

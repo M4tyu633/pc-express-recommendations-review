@@ -330,8 +330,8 @@ function recRow(pl, { title, link } = {}) {
   const items = pl.items.map(i => [byId.get(i.productId), i.reason]);
   const perCard = new Set(pl.items.map(i => i.reason)).size > 1;
   const heading = title ?? recTitles[pl.title] ?? pl.title;
-  const reason = pl.title === "Recently viewed" ? "Want another look?" : pl.items[0].reason;
-  const showReason = !perCard && reason !== "Popular and available";
+  const reason = pl.items[0].reason;
+  const showReason = pl.title !== "Recently viewed" && !perCard && reason !== "Popular and available";
   return '<section class="shelf picks" data-rec="' + esc(pl.id) + '"><div class="row-head"><div><h2>' + esc(heading) + '</h2>' +
     (showReason ? '<p class="muted">' + esc(reason) + '</p>' : '') + '</div>' +
     '<div class="shelf-tools">' + (link ? '<a class="text-link" href="#shop?available=1">Shop in-stock items <span aria-hidden="true">›</span></a>' : '') +
@@ -740,11 +740,18 @@ function ops() {
 }
 
 function help() {
-  return breadcrumb("How ordering works") + '<h1>How ordering works</h1><div class="help-grid">' +
-    '<section><h2>In stock online</h2><p>Add to cart, choose delivery or pickup, and place the order. Sales confirms stock and the total before you pay.</p></section>' +
-    '<section><h2>Order basis</h2><p>The item stays listed with its last price. Request a quote; Sales confirms today’s price and lead time.</p><a href="#product/desktop-in">Try an order-basis item</a></section>' +
-    '<section><h2>High demand</h2><p>Prices move with supply. Ask for today’s price; nothing is charged until you accept.</p><a href="#product/gpu-work">Try it</a></section>' +
-    '<section><h2>Out of stock</h2><p>Save one alert for the exact variant, or pick a ready-to-ship alternative.</p><a href="#product/gpu-unavailable">Try it</a></section></div>';
+  const questions = [
+    ["How do I place an order?", "Add the item to your cart, choose delivery or pickup and place your order. Sales confirms stock and your total before you pay."],
+    ["Can I pick up my order?", "Choose PC Express Online Paterno in your cart and wait for Sales to confirm when it’s ready."],
+    ["What does “by order” mean?", "Request a quote on the product page. Sales will confirm the current price and estimated lead time.", "#product/desktop-in", "See an order-basis product"],
+    ["What if the price changes?", "Use Get today’s price on the product page to ask Sales for the current price and availability.", "#product/gpu-work", "See an example"],
+    ["Can I get an alert when an item is back?", "Select Notify me on the product page to save an alert for that item. You can also browse in-stock alternatives.", "#product/gpu-unavailable", "See how stock alerts work"],
+  ];
+  return breadcrumb("How ordering works") + '<section class="order-faq"><h1>How ordering works</h1><div class="faq-list">' +
+    questions.map(([question, answer, href, label]) =>
+      '<details><summary>' + esc(question) + chevron(1) + '</summary><div><p>' + esc(answer) + '</p>' +
+      (href ? '<a class="text-link" href="' + href + '">' + esc(label) + '</a>' : '') + '</div></details>'
+    ).join("") + '</div></section>';
 }
 const reviewItems = [
   ["1 · Partner offers lead to products", "The offer tile, product links and cart use the same terms. Ended offers retire on their end date.", "#offer/asus-reward", "#offers"],
@@ -1021,8 +1028,16 @@ suggest.addEventListener("click", e => { if (e.target.closest("a")) { closeSugge
 
 // ---------- Brands menu: every partner page stays one click from the main nav ----------
 const brandMenu = document.querySelector("#brand-menu"), brandBtn = document.querySelector(".nav-drop");
-brandMenu.innerHTML = '<div class="frame"><div class="bm-grid">' + stagePartners.map(([k, n]) => '<a href="#partner/' + k + '" class="bm-item">' + (wordmark(k) ?? '') + '<span>' + esc(n) + '</span></a>').join("") +
-  '</div><p class="bm-more"><span>More brands:</span> ' + otherBrands.map(b => '<a href="#search/' + encodeURIComponent(b) + '">' + b + '</a>').join("") + '</p></div>';
+const rasterBrandLogos = new Set(["adata", "galax", "zotac", "viewsonic", "d-link"]);
+const brandTile = (name, href, logo) => '<a href="' + href + '" class="bm-item">' + logo + '<span>' + esc(name) + '</span></a>';
+brandMenu.innerHTML = '<div class="frame"><div class="bm-grid">' +
+  stagePartners.map(([key, name]) => brandTile(name, "#partner/" + key, wordmark(key) ?? "")).join("") +
+  otherBrands.map(name => {
+    const slug = name.toLowerCase();
+    const extension = rasterBrandLogos.has(slug) ? "png" : "svg";
+    const logo = '<span class="logo logo-' + slug + '"><img src="/partner-assets/logos/' + slug + '.' + extension + '" alt="" loading="lazy"></span>';
+    return brandTile(name, "#search/" + encodeURIComponent(name), logo);
+  }).join("") + '</div></div>';
 const setBrandMenu = open => { brandMenu.hidden = !open; brandBtn.setAttribute("aria-expanded", String(open)); };
 brandBtn.addEventListener("click", () => setBrandMenu(brandMenu.hidden));
 document.addEventListener("pointerdown", e => { if (!e.target.closest(".nav-brands")) setBrandMenu(false); });
