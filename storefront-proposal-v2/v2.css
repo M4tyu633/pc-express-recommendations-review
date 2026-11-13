@@ -395,6 +395,18 @@ body.v2 { padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe
 .v2 .faq-list details > div { padding:0 16px 16px; }
 .v2 .faq-list p { margin:0 0 8px; color:var(--sub); }
 .v2 .faq-list .text-link { white-space:normal; }
+.v2 .help-chat { margin-top:20px; border:1px solid var(--line); border-radius:6px; background:#fff; scroll-margin-top:16px; }
+.v2 .help-chat > header { padding:12px 16px; border-bottom:1px solid var(--line); }
+.v2 .help-chat h2 { color:var(--blue-d); }
+.v2 .help-chat > header p { margin:3px 0 0; color:var(--sub); font-size:12px; }
+.v2 .help-chat-log { display:flex; flex-direction:column; align-items:flex-start; gap:8px; min-height:100px; max-height:260px; overflow:auto; padding:12px 16px; background:#f8f9fb; }
+.v2 .help-chat-log:focus-visible { outline:2px solid var(--blue); outline-offset:-2px; }
+.v2 .help-message { max-width:85%; margin:0; padding:8px 10px; border-radius:8px 8px 8px 2px; background:#e9edf4; overflow-wrap:anywhere; }
+.v2 .help-message.is-outgoing { align-self:flex-end; border-radius:8px 8px 2px 8px; background:var(--blue); color:#fff; }
+.v2 .help-chat-form { display:flex; gap:8px; padding:12px 16px; border-top:1px solid var(--line); }
+.v2 .help-chat-form input { flex:1; min-width:0; min-height:42px; padding:8px 10px; border:1px solid #b9c5d6; border-radius:4px; font-size:16px; }
+.v2 .help-chat-form button { background:var(--blue); }
+.v2 .help-chat-form button:hover { background:var(--blue-d); }
 
 /* Dialog, toast, footer */
 .v2 dialog { border:0; border-radius:8px; max-width:min(520px, calc(100vw - 24px)); padding:22px; color:var(--ink); box-shadow:0 20px 50px #0005; }

@@ -82,13 +82,13 @@ const inCategory = (product, kind) => !kind || (kind === "parts" ? partCategorie
 
 // ---------- Partner offers: one record drives banner, terms, badges, cart and retirement ----------
 const offers = [
-  { id: "laptop-bundle", partner: "NVIDIA", title: "Gaming laptop bundle", benefit: "Free wireless mouse with selected RTX laptops", cardBenefit: "Free wireless mouse", cardKind: "gift", cardLabel: "Free",
+  { id: "laptop-bundle", partner: "NVIDIA", title: "Gaming laptop bundle", benefit: "Free wireless mouse with selected RTX laptops", cardBenefit: "Free wireless mouse", cardKind: "gift", cardLabel: "Free", automaticBenefit: "Free mouse added to your order",
     start: "2026-11-01", end: "2026-12-14", claim: null, items: ["laptop-lenovo", "laptop-a16", "laptop-msi"], art: "slide-7.jpg",
     steps: ["Add an eligible laptop to your cart. The gift appears on the order automatically.", "Sales confirms stock and the gift with your order.", "The mouse ships or is released with the laptop."] },
   { id: "asus-reward", partner: "ASUS", title: "ASUS gaming gear cashback", benefit: "₱500 e-wallet cashback per eligible item", cardBenefit: "₱500 e-wallet cashback", cardKind: "cashback", cardLabel: "₱500 back",
     start: "2026-11-10", end: "2026-12-31", claim: "2027-01-15", items: ["monitor-qhd", "keyboard", "gpu-unavailable"], art: "slide-1.jpg",
     steps: ["Buy an eligible ASUS item between Nov 10 and Dec 31.", "Keep your PC Express invoice.", "Submit the claim on the partner page by Jan 15."] },
-  { id: "gpu-holiday", partner: "NVIDIA", title: "Holiday graphics card deals", benefit: "Bundle price on RTX graphics cards with a power supply", cardBenefit: "GPU and power supply bundle", cardKind: "bundle", cardLabel: "PSU bundle", compactLabel: "Bundle",
+  { id: "gpu-holiday", partner: "NVIDIA", title: "Holiday graphics card deals", benefit: "Bundle price on RTX graphics cards with a power supply", cardBenefit: "GPU and power supply bundle", cardKind: "bundle", cardLabel: "PSU bundle", compactLabel: "Bundle", automaticBenefit: "Bundle price applies in your cart",
     start: "2026-12-01", end: "2026-12-31", claim: null, items: ["gpu-mid", "gpu-compact", "gpu-max", "gpu-entry"], art: "slide-5.jpg",
     steps: ["Choose an eligible card and a listed power supply.", "The bundle price applies in the cart during the offer dates."] },
   { id: "gamer-days", partner: "Intel", title: "Gamer days game bundle", benefit: "Free game code with selected Intel PCs", cardBenefit: "Free game code", cardKind: "gift", cardLabel: "Free",
@@ -150,6 +150,7 @@ const availText = (p, s = p.status) => ({
 const availClass = (p, s = p.status) => "avail s-" + s + (s === "buy" && p.stock <= LOW_STOCK ? " low" : "");
 const avail = (p, s = p.status) => '<p class="' + availClass(p, s) + '">' + availText(p, s) + '</p>';
 const offerIcons = {
+  cashback: '<path d="m8 4-5 5 5 5M3 9h11a6 6 0 1 1 0 12h-3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>',
   gift: '<path d="M11 13v7H5a1 1 0 0 1-1-1v-6h7Zm9 0v6a1 1 0 0 1-1 1h-6v-7h7ZM8.5 4c1.5 0 2.7 1 3.5 2.3C12.8 5 14 4 15.5 4A2.5 2.5 0 0 1 18 6.5c0 .6-.2 1.1-.5 1.5H20a1 1 0 0 1 1 1v2h-8V8h-2v3H3V9a1 1 0 0 1 1-1h2.5A2.5 2.5 0 0 1 8.5 4Zm0 1.5a1 1 0 0 0 0 2h2c-.5-1-1.2-2-2-2Zm7 0c-.8 0-1.5 1-2 2h2a1 1 0 0 0 0-2Z"/>',
   bundle: '<path d="m12 3 8.6 4.3-8.6 4.3-8.6-4.3L12 3ZM3 9l8 4v8l-8-4V9Zm18 0v8l-8 4v-8l8-4Z"/>',
 };
@@ -389,10 +390,13 @@ function offerPage(id) {
   const productsHeading = st === "ended" ? "Products from this offer" : "Eligible models";
   const productsLink = st === "live" ? "Shop eligible models" : "View products";
   const partnerKey = o.partner.toLowerCase();
+  const redemption = o.claim
+    ? '<div><dt>Claim by</dt><dd>' + fmtDate(o.claim) + '</dd></div>'
+    : '<div><dt>How you get it</dt><dd>' + esc(o.automaticBenefit) + '</dd></div>';
   return breadcrumb("Partner offers") + banner +
     '<section class="campaign-banner v2"><div class="campaign-copy"><div class="campaign-brand">' + (wordmark(partnerKey) ?? esc(o.partner)) + '</div>' +
     '<h1>' + esc(o.title) + '</h1><p>' + esc(o.benefit) + '.</p>' +
-    '<dl class="offer-facts"><div><dt>Purchase dates</dt><dd>' + fmtDate(o.start) + ' – ' + fmtDate(o.end) + '</dd></div>' + (o.claim ? '<div><dt>Claim by</dt><dd>' + fmtDate(o.claim) + '</dd></div>' : '<div><dt>Claim</dt><dd>No claim needed</dd></div>') + '</dl>' +
+    '<dl class="offer-facts"><div><dt>Purchase dates</dt><dd>' + fmtDate(o.start) + ' – ' + fmtDate(o.end) + '</dd></div>' + redemption + '</dl>' +
     '<a class="primary campaign-action" href="#offer/' + o.id + '/items">' + productsLink + '</a></div>' +
     '<div class="campaign-products">' + items.slice(0, 2).map(p => '<a href="#product/' + p.id + '">' + image(p, true) + '</a>').join("") + '</div></section>' +
     '<section class="shelf" id="eligible-models"><h2>' + productsHeading + '</h2>' + grid(items) + '</section>' +
@@ -798,7 +802,18 @@ function help() {
     questions.map(([question, answer, href, label]) =>
       '<details><summary>' + esc(question) + chevron(1) + '</summary><div><p>' + esc(answer) + '</p>' +
       (href ? '<a class="text-link" href="' + href + '">' + esc(label) + '</a>' : '') + '</div></details>'
-    ).join("") + '</div></section>';
+    ).join("") + '</div>' +
+    `<section class="help-chat" id="help-chat" aria-labelledby="help-chat-title" tabindex="-1">
+      <header><h2 id="help-chat-title">Got a question?</h2><p id="help-chat-hint">Demo chat · Messages stay in this browser.</p></header>
+      <div class="help-chat-log" role="log" aria-label="Conversation" tabindex="0">
+        <p class="help-message"><span class="sr-only">PC Express: </span>Hi! How can we help?</p>
+      </div>
+      <form class="help-chat-form">
+        <label class="sr-only" for="help-message">Your message</label>
+        <input id="help-message" name="message" type="text" required maxlength="500" autocomplete="off" aria-describedby="help-chat-hint" placeholder="Type your message">
+        <button type="submit" class="primary">Send</button>
+      </form>
+    </section></section>`;
 }
 const reviewItems = [
   ["1 · Partner offers lead to products", "The offer tile, product links and cart use the same terms. Ended offers retire on their end date.", "#offer/asus-reward", "#offers"],
@@ -907,7 +922,11 @@ function render({ scroll = false } = {}) {
     updateShelfArrows(track);
     shelfSizes.observe(track);
   }
-  if (scroll) {
+  if (page === "help" && key === "chat") {
+    const chat = document.getElementById("help-chat");
+    chat.scrollIntoView({ block: "start" });
+    if (scroll) chat.focus({ preventScroll: true });
+  } else if (scroll) {
     if (option === "items" || key === "items") document.querySelector("#eligible-models")?.scrollIntoView();
     else if (page === "offer" && key && location.hash.endsWith("/items")) document.querySelector("#eligible-models")?.scrollIntoView();
     else if (page === "partner" && option) document.querySelector("#shelf-" + CSS.escape(option))?.scrollIntoView();
@@ -1015,6 +1034,27 @@ document.addEventListener("change", e => {
   if (e.target.id === "diff-only") document.querySelector(".compare-table")?.classList.toggle("diff-only", e.target.checked);
 });
 dialog.addEventListener("close", () => { for (const b of document.querySelectorAll('[data-action="restock"]')) if (alerts.has(b.dataset.id + "/" + b.dataset.variant)) b.textContent = "Alert saved"; });
+main.addEventListener("submit", event => {
+  const form = event.target;
+  if (!form.matches(".help-chat-form")) return;
+  event.preventDefault();
+  const input = form.elements.message;
+  const message = input.value.trim();
+  if (!message) return;
+
+  const log = form.previousElementSibling;
+  const outgoing = document.createElement("p");
+  outgoing.className = "help-message is-outgoing";
+  outgoing.innerHTML = '<span class="sr-only">You: </span>';
+  outgoing.append(message);
+  const reply = document.createElement("p");
+  reply.className = "help-message";
+  reply.innerHTML = '<span class="sr-only">PC Express: </span>This is just a demo.';
+  log.append(outgoing, reply);
+  log.scrollTop = log.scrollHeight;
+  form.reset();
+  input.focus({ preventScroll: true });
+});
 search.addEventListener("submit", e => { e.preventDefault(); const q = query.value.trim(); location.hash = q ? "#search/" + encodeURIComponent(q) : "#shop"; });
 window.addEventListener("hashchange", () => render({ scroll: true }));
 document.querySelector(".skip").addEventListener("click", e => { e.preventDefault(); main.focus(); main.scrollIntoView(); });
