@@ -320,8 +320,10 @@ function recRow(pl, { title, link } = {}) {
   const items = pl.items.map(i => [byId.get(i.productId), i.reason]);
   const perCard = new Set(pl.items.map(i => i.reason)).size > 1;
   const heading = title ?? recTitles[pl.title] ?? pl.title;
+  const reason = pl.items[0].reason;
+  const showReason = !perCard && reason !== "Popular and available";
   return '<section class="shelf picks" data-rec="' + esc(pl.id) + '"><div class="row-head"><div><h2>' + esc(heading) + '</h2>' +
-    (perCard ? '' : '<p class="muted">' + esc(pl.items[0].reason) + '</p>') + '</div>' +
+    (showReason ? '<p class="muted">' + esc(reason) + '</p>' : '') + '</div>' +
     '<div class="shelf-tools">' + (link ? '<a class="text-link" href="#shop?available=1">Shop in-stock items <span aria-hidden="true">›</span></a>' : '') +
     shelfArrows(heading) + '</div></div>' +
     '<div class="shop-grid">' + items.map(([p, why]) => card(p, perCard ? { note: why } : {})).join("") + '</div></section>';

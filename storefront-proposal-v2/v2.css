@@ -120,6 +120,7 @@
 .v2 .shelf { margin-top:28px; }
 .v2 .shelf:first-of-type { margin-top:0; }
 .v2 .row-head { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; margin-bottom:12px; }
+.v2 .picks > .row-head { align-items:center; }
 .v2 .row-title { display:flex; align-items:center; gap:14px; }
 .v2 .row-title > .wm { min-width:96px; justify-content:center; padding:8px 10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
 .v2 .partner-row { background:#fff; border:1px solid var(--line); border-top:3px solid var(--brand); border-radius:6px; padding:16px; }
@@ -338,6 +339,7 @@
   .v2 .brand-tile .wm { transform:scale(.8); }
   .v2 .panel-copy .wm { transform:scale(1.05); }
   .v2 .row-head { flex-direction:column; align-items:flex-start; gap:6px; }
+  .v2 .picks > .row-head { flex-direction:row; flex-wrap:wrap; align-items:center; gap:8px 16px; }
   .v2 .row-title > .wm { min-width:0; }
   .v2 .partner-row { padding:12px; }
   .v2 .partner-row > .shop-grid, .v2 .picks > .shop-grid { --cards-per-row:2; --card-gap:8px; }
