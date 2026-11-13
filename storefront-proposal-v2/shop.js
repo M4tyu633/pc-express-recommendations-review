@@ -252,9 +252,15 @@ let stageIndex = 0, stageTimer = null, stagePaused = matchMedia("(prefers-reduce
 function showPartner(i) {
   const root = document.querySelector(".stage");
   if (!root) return;
-  stageIndex = (i + rotation.length) % rotation.length;
+  const nextIndex = (i + rotation.length) % rotation.length;
+  const panels = root.querySelectorAll(".pane");
+  if (!panels[nextIndex].classList.contains("is-active")) {
+    root.style.setProperty("--banner-enter-x", i < stageIndex ? "-6%" : "6%");
+    root.classList.add("has-switched");
+  }
+  stageIndex = nextIndex;
   const key = rotation[stageIndex][0];
-  root.querySelectorAll(".pane").forEach((p, n) => { const on = n === stageIndex; p.classList.toggle("is-active", on); p.toggleAttribute("aria-hidden", !on); p.tabIndex = on ? 0 : -1; });
+  panels.forEach((p, n) => { const on = n === stageIndex; p.classList.toggle("is-active", on); p.toggleAttribute("aria-hidden", !on); p.tabIndex = on ? 0 : -1; });
   root.querySelectorAll(".stage-dots [data-stage-go]").forEach((b, n) => b.toggleAttribute("aria-current", n === stageIndex));
   root.querySelectorAll(".brand-tile").forEach(b => b.classList.toggle("is-live", b.dataset.key === key));
   heroViews[key]++;
@@ -267,7 +273,9 @@ function restartStage() {
   const btn = root.querySelector(".stage-pause");
   btn.innerHTML = '<span aria-hidden="true">' + (stagePaused ? "▶" : "❚❚") + '</span>';
   btn.setAttribute("aria-label", stagePaused ? "Resume rotation" : "Pause rotation");
-  if (!stagePaused) stageTimer = setInterval(() => showPartner(stageIndex + 1), 6000);
+  if (!stagePaused) stageTimer = setInterval(() => {
+    if (!root.querySelector(".stage-view").matches(":hover, :focus-within")) showPartner(stageIndex + 1);
+  }, 6000);
 }
 function stopStage() { clearInterval(stageTimer); stageTimer = null; }
 function brandsPage() {
