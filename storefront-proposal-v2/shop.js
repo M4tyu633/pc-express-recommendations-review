@@ -1056,7 +1056,7 @@ function initSearchShortcuts() {
 
   for (const link of group.querySelectorAll("a")) {
     const key = link.hash.split("/")[1];
-    const mark = wordmark(directoryOverrides[key]?.logo ?? key);
+    const mark = wordmark(key === "business" ? key : directoryOverrides[key]?.logo ?? key);
     if (mark) {
       link.setAttribute("aria-label", link.textContent);
       link.innerHTML = mark;

@@ -47,8 +47,10 @@ body.v2 { padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe
 .v2 .shortcut-group a .logo { width:100%; }
 .v2 .shortcut-group a .logo img { max-width:100%; max-height:19px; }
 .v2 .shortcut-group a :is(.logo-taiwan-excellence, .logo-asus-agent) img { max-height:24px; }
-.v2 .shortcut-group a .logo-business img { max-height:13px; }
-.v2 .shortcut-group a .logo-business small { font-size:7px; letter-spacing:0; }
+.v2 .shortcut-group a .logo-business img { max-height:16px; }
+.v2 .shortcut-group a .logo-business small { color:inherit; font-size:9px; letter-spacing:0; text-transform:none; text-align:center; white-space:normal; }
+.v2 .shortcut-group a .logo-mini-pc { flex-direction:row; gap:4px; color:var(--blue); font-size:11px; }
+.v2 .shortcut-group a .logo-mini-pc svg { flex:none; }
 .v2 .shortcut-group a:is(:hover, :focus-visible, [aria-current]) { background:#eef3fc; color:var(--blue); }
 .v2 .shortcut-group a[aria-current] { box-shadow:inset 0 -2px var(--blue); }
 .v2 .shortcut-group a:focus-visible { outline-offset:-2px; }
