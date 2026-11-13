@@ -159,21 +159,19 @@
 .v2 .card-offer .card-offer-compact { display:none; }
 .v2 .card-offer:is(:hover, :focus-visible) { background:#dfeafb; color:var(--blue-d); }
 .v2 .card-offer:focus-visible { outline-offset:1px; }
-.v2 .shop-card .card-gift { display:inline-flex; align-items:center; gap:5px; padding:0; background:transparent; color:var(--blue-d); }
-.v2 .card-gift .gift-badge { display:inline-flex; align-items:center; gap:3px; flex:none; min-height:20px; padding-inline:4px; border-radius:3px; background:var(--red); color:#fff; font-size:9px; font-weight:800; letter-spacing:.025em; }
-.v2 .gift-badge svg { flex:none; }
-.v2 .card-gift:is(:hover, :focus-visible) .gift-badge { background:var(--red-d); }
+.v2 .shop-card .card-gift { display:inline-flex; align-items:center; align-self:center; flex:none; gap:4px; margin-inline-start:auto; padding:3px 6px; border:1px solid #d6e0f0; border-radius:4px; background:transparent; color:var(--blue-d); }
+.v2 .card-gift svg { flex:none; }
+.v2 .shop-card .card-gift:is(:hover, :focus-visible) { background:#eef3fb; border-color:#9db4d7; }
 @container (max-width: 220px) {
   .v2 .card-price-line:has(.card-offer) .price small { display:block; margin-left:0; }
 }
 @container (max-width: 146px) {
   .v2 .card-price-line:has(.card-offer) .price { font-size:16px; }
+  .v2 .shop-card .card-gift { gap:3px; padding-inline:3px; }
+  .v2 .card-gift svg { width:12px; height:12px; }
   .v2 .shop-card .card-offer:not(.card-gift) { padding-inline:4px; }
   .v2 .card-offer:not(.card-gift) > span:first-child { display:none; }
   .v2 .card-offer .card-offer-compact { display:block; }
-}
-@container (max-width: 164px) {
-  .v2 .card-gift .gift-item { display:none; }
 }
 /* Logo sizing, tuned per mark so they read the same weight */
 .v2 .brand-tile .logo img { max-width:min(96px, 100%); }
