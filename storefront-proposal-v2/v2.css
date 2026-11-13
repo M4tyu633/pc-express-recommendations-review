@@ -44,12 +44,6 @@
 .v2 .header-tools .badge { display:inline-grid; place-items:center; min-width:20px; height:20px; padding:0 5px; border-radius:10px; background:var(--red); color:#fff; font-size:12px; }
 .v2 .header-tools .talk-sales { border:1.5px solid var(--ok); color:var(--ok); border-radius:4px; padding:7px 10px; }
 .v2 .cat-bar { background:var(--blue); }
-.v2 .cat-bar .frame { display:flex; align-items:stretch; overflow-x:auto; scrollbar-width:none; }
-.v2 .cat-bar a { flex:none; display:flex; align-items:center; padding:0 11px; min-height:44px; color:#fff; text-decoration:none; font-size:14px; font-weight:700; }
-.v2 .cat-bar a:hover { background:var(--blue-d); }
-.v2 .cat-bar .cat-all { background:var(--red); padding:0 18px; }
-.v2 .cat-bar .cat-sale { color:#ffe14d; margin-left:auto; padding-right:0; }
-@media (max-width: 1280px) { .v2 .cat-bar a { font-size:13.5px; padding:0 9px; } }
 
 /* Partner stage */
 .v2 .stage { background:#fff; border-bottom:1px solid var(--line); padding:14px 0; }
@@ -129,7 +123,29 @@
 .v2 .row-title { display:flex; align-items:center; gap:14px; }
 .v2 .row-title > .wm { min-width:96px; justify-content:center; padding:8px 10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
 .v2 .partner-row { background:#fff; border:1px solid var(--line); border-top:3px solid var(--brand); border-radius:6px; padding:16px; }
-.v2 .partner-row .shop-grid, .v2 .picks .shop-grid { display:grid; grid-auto-flow:column; grid-template-columns:none; grid-auto-columns:calc((100% - 36px) / 4); gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; padding-bottom:4px; }
+.v2 .partner-row > .shop-grid, .v2 .picks > .shop-grid {
+  --cards-per-row:4;
+  --card-gap:12px;
+  display:grid;
+  grid-auto-flow:column;
+  grid-template-columns:none;
+  grid-auto-columns:calc((100% - (var(--cards-per-row) - 1) * var(--card-gap)) / var(--cards-per-row));
+  gap:var(--card-gap);
+  overflow-x:auto;
+  scrollbar-width:none;
+  scroll-snap-type:x mandatory;
+}
+.v2 :is(.partner-row, .picks) > .shop-grid :focus-visible { outline-offset:-3px; }
+.v2 .shelf-tools { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.v2 .shelf-tools:not(:has(> :not([hidden]))) { display:none; }
+.v2 .shelf-arrows { display:flex; gap:6px; }
+.v2 .shelf-arrows button {
+  display:grid; place-items:center; width:36px; height:36px; min-height:0;
+  padding:0; border:1px solid #bfc9d7; border-radius:4px; background:#fff; color:var(--blue);
+}
+.v2 .shelf-arrows button:not([aria-disabled="true"]):is(:hover, :focus-visible) { background:#eef3fc; border-color:var(--blue); }
+.v2 .shelf-arrows button[aria-disabled="true"] { color:#7c8695; border-color:var(--line); cursor:default; }
+@media (max-width:980px) { .v2 .partner-row > .shop-grid, .v2 .picks > .shop-grid { --cards-per-row:3; } }
 .v2 .shop-grid { gap:12px; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); }
 .v2 .shop-card { background:#fff; border:1px solid var(--line); border-radius:6px; overflow:hidden; display:flex; flex-direction:column; box-shadow:none; scroll-snap-align:start; transition:box-shadow .15s, border-color .15s; }
 .v2 .shop-card:hover { border-color:#c9d1de; box-shadow:0 4px 14px #1a1f2b14; }
@@ -299,8 +315,6 @@
   .v2 .header-tools a { gap:3px; }
   .v2 .header-tools .badge { min-width:18px; height:18px; font-size:11px; }
   .v2 .shop-search { grid-column:1 / -1; height:42px; }
-  .v2 .cat-bar a { min-height:40px; padding:0 11px; font-size:13px; }
-  .v2 .cat-bar .cat-sale { margin-left:0; }
   .v2 .stage { padding:10px 0 12px; }
   .v2 .stage-view { aspect-ratio:auto; height:210px; border-radius:4px; }
   .v2 .pane.art img { object-position:center top; }
@@ -326,7 +340,7 @@
   .v2 .row-head { flex-direction:column; align-items:flex-start; gap:6px; }
   .v2 .row-title > .wm { min-width:0; }
   .v2 .partner-row { padding:12px; }
-  .v2 .partner-row .shop-grid, .v2 .picks .shop-grid { grid-auto-columns:46%; }
+  .v2 .partner-row > .shop-grid, .v2 .picks > .shop-grid { --cards-per-row:2; --card-gap:8px; }
   .v2 .shop-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
   .v2 .shop-card .button-row { grid-template-columns:1fr; }
   .v2 .shop-card .button-row .secondary { display:none; }

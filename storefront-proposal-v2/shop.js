@@ -280,13 +280,17 @@ function offerTile(o) {
     '<h3>' + esc(o.title) + '</h3><p>' + esc(o.benefit) + '</p><p class="fine">' + (st === "live" ? "Valid until " + fmtDate(o.end) : "Starts " + fmtDate(o.start)) + '</p>' +
     '<a class="primary" href="#offer/' + o.id + '">' + (st === "live" ? "Shop " + n + " eligible models" : "Preview " + n + " models") + '</a></div></article>';
 }
+function shelfArrows(title) {
+  return '<div class="shelf-arrows" role="group" aria-label="' + esc(title) + ' products" hidden>' +
+    '<button type="button" data-shelf-step="-1" aria-label="Previous products" aria-disabled="true">' + chevron(-1) + '</button>' +
+    '<button type="button" data-shelf-step="1" aria-label="Next products" aria-disabled="false">' + chevron(1) + '</button></div>';
+}
 function partnerRow(pl) {
   sessionViews[pl.key]++;
   const items = arrange(pl.items, pl.hero);
-  const buyable = items.filter(p => p.status === "buy").length;
   const color = stagePartners.find(([k]) => k === pl.key)?.[2] ?? "#0a3a99";
   return '<section class="shelf partner-row" data-partner="' + pl.key + '" style="--brand:' + color + '"><div class="row-head"><div class="row-title">' + (wordmark(pl.key) ?? '') + '<div><h2>' + esc(pl.title) + '</h2>' +
-    '</div></div><a class="text-link" href="#partner/' + pl.key + '">View all <span aria-hidden="true">›</span></a></div>' +
+    '</div></div><div class="shelf-tools"><a class="text-link" href="#partner/' + pl.key + '">View all <span aria-hidden="true">›</span></a>' + shelfArrows(pl.title) + '</div></div>' +
     grid(items) + '</section>';
 }
 function home() {
@@ -307,9 +311,11 @@ const recTitles = { "Recommended for you": "Picked for you", "Bestsellers": "Bes
 function recRow(pl, { title, link } = {}) {
   const items = pl.items.map(i => [byId.get(i.productId), i.reason]);
   const perCard = new Set(pl.items.map(i => i.reason)).size > 1;
-  return '<section class="shelf picks" data-rec="' + esc(pl.id) + '"><div class="row-head"><div><h2>' + esc(title ?? recTitles[pl.title] ?? pl.title) + '</h2>' +
+  const heading = title ?? recTitles[pl.title] ?? pl.title;
+  return '<section class="shelf picks" data-rec="' + esc(pl.id) + '"><div class="row-head"><div><h2>' + esc(heading) + '</h2>' +
     (perCard ? '' : '<p class="muted">' + esc(pl.items[0].reason) + '</p>') + '</div>' +
-    (link ? '<a class="text-link" href="#shop?available=1">Shop in-stock items <span aria-hidden="true">›</span></a>' : '') + '</div>' +
+    '<div class="shelf-tools">' + (link ? '<a class="text-link" href="#shop?available=1">Shop in-stock items <span aria-hidden="true">›</span></a>' : '') +
+    shelfArrows(heading) + '</div></div>' +
     '<div class="shop-grid">' + items.map(([p, why]) => card(p, perCard ? { note: why } : {})).join("") + '</div></section>';
 }
 // Cart cross-sell: a compact list beside the order, one-tap add.
@@ -680,6 +686,33 @@ function wishlistPage() {
 }
 const missing = () => '<h1>Page unavailable</h1><p><a href="#home">Return home</a></p>';
 
+const shelfTracks = ".partner-row > .shop-grid, .picks > .shop-grid";
+function updateShelfArrows(track) {
+  const arrows = track.parentElement.querySelector(".shelf-arrows");
+  const remaining = track.scrollWidth - track.clientWidth;
+  arrows.hidden = remaining <= 1;
+  arrows.firstElementChild.setAttribute("aria-disabled", String(track.scrollLeft <= 1));
+  arrows.lastElementChild.setAttribute("aria-disabled", String(track.scrollLeft >= remaining - 1));
+}
+const shelfSizes = new ResizeObserver(entries => {
+  for (const { target } of entries) updateShelfArrows(target);
+});
+main.addEventListener("scroll", event => {
+  if (event.target.matches(shelfTracks)) updateShelfArrows(event.target);
+}, { capture: true, passive: true });
+main.addEventListener("click", event => {
+  const arrow = event.target.closest("[data-shelf-step]");
+  if (!arrow || arrow.getAttribute("aria-disabled") === "true") return;
+  const track = arrow.closest(".shelf").querySelector(".shop-grid");
+  const [first, second] = track.children;
+  const step = second.offsetLeft - first.offsetLeft;
+  const page = Math.max(1, Math.round(track.clientWidth / step));
+  track.scrollBy({
+    left: Number(arrow.dataset.shelfStep) * step * page,
+    behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+  });
+});
+
 // ---------- Router ----------
 function route() {
   const [path, qs] = location.hash.slice(1).split("?");
@@ -688,6 +721,7 @@ function route() {
   return { parts, params: new URLSearchParams(qs ?? "") };
 }
 function render({ scroll = false } = {}) {
+  shelfSizes.disconnect();
   stopStage(); document.querySelector("#stage-slot").innerHTML = "";
   const { parts: [page, key, option], params } = route();
   const product = byId.get(key);
@@ -719,6 +753,10 @@ function render({ scroll = false } = {}) {
     default: main.innerHTML = missing();
   }
   syncChrome(page);
+  for (const track of main.querySelectorAll(shelfTracks)) {
+    updateShelfArrows(track);
+    shelfSizes.observe(track);
+  }
   if (scroll) {
     if (option === "items" || key === "items") document.querySelector("#eligible-models")?.scrollIntoView();
     else if (page === "offer" && key && location.hash.endsWith("/items")) document.querySelector("#eligible-models")?.scrollIntoView();
@@ -900,7 +938,11 @@ allMenu.innerHTML = '<ul>' + allGroups.map(([label, to], i) => Array.isArray(to)
   ? '<li class="has-sub"><button type="button" class="am-row" data-sub="' + i + '">' + esc(label) + '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><ul class="am-sub">' +
     to.map(([l, h]) => '<li><a href="' + h + '">' + esc(l) + '</a></li>').join("") + '</ul></li>'
   : '<li><a class="am-row" href="' + to + '">' + esc(label) + '</a></li>').join("") + '</ul>';
-const setAllMenu = open => { allMenu.hidden = !open; allBtn.setAttribute("aria-expanded", String(open)); };
+const setAllMenu = open => {
+  allMenu.hidden = !open;
+  allBtn.setAttribute("aria-expanded", String(open));
+  if (!open) allMenu.querySelectorAll(".has-sub.open").forEach(group => group.classList.remove("open"));
+};
 allBtn.addEventListener("click", () => setAllMenu(allMenu.hidden));
 allMenu.addEventListener("click", e => {
   const sub = e.target.closest("[data-sub]");
