@@ -181,13 +181,23 @@
 .v2 .state-banner { border-radius:6px; padding:12px 14px; margin-bottom:14px; border:1px solid; }
 .v2 .state-banner.ended { background:#fff1f2; border-color:#f3b4bb; }
 .v2 .state-banner.upcoming { background:#fffaf0; border-color:#f1d9a6; }
-.v2 .campaign-banner.v2 { display:grid; grid-template-columns:1fr 1.2fr; background:#fff; border:1px solid var(--line); border-radius:6px; overflow:hidden; align-items:stretch; }
-.v2 .campaign-banner.v2 > div { padding:24px; }
-.v2 .campaign-banner.v2 img { width:100%; height:100%; object-fit:cover; }
-.v2 .offer-facts { display:grid; grid-template-columns:repeat(3, auto); gap:8px 20px; margin:14px 0 18px; justify-content:start; }
+.v2 .campaign-banner.v2 { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:clamp(18px, 4vw, 48px); align-items:center; padding:clamp(20px, 3.4vw, 40px); background:#fff; border:1px solid var(--line); border-radius:6px; }
+.v2 .campaign-brand { margin-bottom:14px; }
+.v2 .campaign-copy > p { margin-bottom:0; color:var(--sub); }
+.v2 .campaign-products { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; width:min(100%, 440px); justify-self:end; }
+.v2 .campaign-products a { display:block; border:1px solid var(--line); border-radius:4px; overflow:hidden; }
+.v2 .campaign-products img { width:100%; height:auto; aspect-ratio:1; object-fit:contain; border-radius:0; }
+.v2 .primary.campaign-action { background:var(--blue); }
+.v2 .primary.campaign-action:hover { background:var(--blue-d); }
+.v2 .offer-facts { display:flex; flex-wrap:wrap; gap:10px 22px; margin:18px 0; }
 .v2 .offer-facts dt { font-size:12px; color:var(--sub); } .v2 .offer-facts dd { margin:2px 0 0; font-weight:700; }
-.v2 .terms { background:#fff; border:1px solid var(--line); border-radius:6px; padding:16px 20px; margin-top:14px; }
+.v2 #eligible-models > h2 { margin-bottom:12px; }
+.v2 #eligible-models .shop-grid { grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); }
+.v2 #eligible-models .card-art img { max-height:260px; }
+.v2 .terms { background:#fff; border:1px solid var(--line); border-radius:6px; padding:0 16px; margin-top:24px; }
+.v2 .terms summary { padding:12px 0; cursor:pointer; font-weight:600; }
 .v2 .terms ol { margin:8px 0 0; padding-left:20px; line-height:1.6; }
+.v2 .terms > p { margin:8px 0 14px; }
 .v2 .brand-page img { width:100%; height:auto; border-radius:6px; display:block; margin-bottom:14px; }
 
 /* Browse */
@@ -208,6 +218,14 @@
 .v2 .exact-match { background:#fff; border:1px solid var(--line); border-left:3px solid var(--blue); border-radius:6px; padding:12px; margin-bottom:14px; }
 .v2 .exact-match .shop-grid { grid-template-columns:minmax(0, 260px); }
 .v2 .empty { background:#fff; border:1px solid var(--line); border-radius:6px; padding:20px; }
+.v2 .shopping-empty { width:min(100%, 32rem); margin:clamp(20px, 5vw, 56px) auto; padding:clamp(24px, 4vw, 44px) 20px; text-align:center; }
+.v2 .shopping-empty > svg { color:var(--blue); margin-bottom:12px; }
+.v2 .shopping-empty h1 { margin-bottom:8px; }
+.v2 .shopping-empty p { margin:0 auto; max-width:32ch; color:var(--sub); }
+.v2 .shopping-empty-actions { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:8px 16px; margin-top:20px; }
+.v2 .shopping-empty-actions .primary { background:var(--blue); min-height:44px; }
+.v2 .shopping-empty-actions .primary:hover { background:var(--blue-d); }
+.v2 .shopping-empty-actions .text-link { display:inline-flex; align-items:center; min-height:44px; }
 
 /* Product page */
 .v2 .offer-layout.v2 { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:24px; align-items:start; }
@@ -348,7 +366,8 @@
   .v2 .shop-card .primary { font-size:13px; padding:0 8px; }
   .v2 .offer-tiles { grid-template-columns:1fr; }
   .v2 .campaign-banner.v2 { grid-template-columns:1fr; }
-  .v2 .offer-facts { grid-template-columns:1fr 1fr; }
+  .v2 .campaign-products { width:min(100%, 360px); justify-self:start; }
+  .v2 #eligible-models .shop-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
   .v2 .offer-layout.v2 { display:flex; flex-direction:column; gap:14px; }
   .v2 .offer-layout.v2 .offer-panel { order:-1; }
   .v2 .offer-layout.v2 .detail-art { max-width:240px; align-self:center; padding:8px; }

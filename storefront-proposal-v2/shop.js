@@ -344,16 +344,20 @@ function offerPage(id) {
   if (!o) return missing();
   const st = offerStatus(o);
   const items = arrange(o.items);
-  const ready = items.filter(p => p.status === "buy").length;
   const banner = st === "ended"
     ? '<div class="state-banner ended"><strong>This offer ended on ' + fmtDate(o.end) + '.</strong> The products below are still available at regular terms. <a href="#offers">See current offers</a></div>'
     : st === "upcoming" ? '<div class="state-banner upcoming"><strong>Starts ' + fmtDate(o.start) + '.</strong> Prices and eligibility may change before launch.</div>' : "";
-  return breadcrumb("Partner offers") + banner + '<section class="campaign-banner v2"><div><p class="kicker">' + esc(o.partner) + ' partner offer · sample terms</p><h1>' + esc(o.title) + '</h1><p>' + esc(o.benefit) + '.</p>' +
-    '<dl class="offer-facts"><div><dt>Purchase dates</dt><dd>' + fmtDate(o.start) + ' – ' + fmtDate(o.end) + '</dd></div>' + (o.claim ? '<div><dt>Claim by</dt><dd>' + fmtDate(o.claim) + '</dd></div>' : '<div><dt>Claim</dt><dd>No claim needed</dd></div>') +
-    '<div><dt>Eligible models</dt><dd>' + items.length + ' (' + ready + ' ready to ship)</dd></div></dl><a class="primary" href="#offer/' + o.id + '/items">Shop eligible models</a></div>' +
-    '<img src="/pcx-assets/' + esc(o.art) + '" alt="' + esc(o.partner) + ' partner creative" width="1440" height="480"></section>' +
-    '<section class="terms"><h2>How it works</h2><ol>' + o.steps.map(s => '<li>' + esc(s) + '</li>').join("") + '</ol></section>' +
-    '<section class="shelf" id="eligible-models"><h2>Eligible models</h2><p class="muted">Every eligible model stays listed. Ready-to-ship items appear first; order-basis items show the quote path.</p>' + grid(items) + '</section>';
+  const productsHeading = st === "ended" ? "Products from this offer" : "Eligible models";
+  const productsLink = st === "live" ? "Shop eligible models" : "View products";
+  const partnerKey = o.partner.toLowerCase();
+  return breadcrumb("Partner offers") + banner +
+    '<section class="campaign-banner v2"><div class="campaign-copy"><div class="campaign-brand">' + (wordmark(partnerKey) ?? esc(o.partner)) + '</div>' +
+    '<h1>' + esc(o.title) + '</h1><p>' + esc(o.benefit) + '.</p>' +
+    '<dl class="offer-facts"><div><dt>Purchase dates</dt><dd>' + fmtDate(o.start) + ' – ' + fmtDate(o.end) + '</dd></div>' + (o.claim ? '<div><dt>Claim by</dt><dd>' + fmtDate(o.claim) + '</dd></div>' : '<div><dt>Claim</dt><dd>No claim needed</dd></div>') + '</dl>' +
+    '<a class="primary campaign-action" href="#offer/' + o.id + '/items">' + productsLink + '</a></div>' +
+    '<div class="campaign-products">' + items.slice(0, 2).map(p => '<a href="#product/' + p.id + '">' + image(p, true) + '</a>').join("") + '</div></section>' +
+    '<section class="shelf" id="eligible-models"><h2>' + productsHeading + '</h2>' + grid(items) + '</section>' +
+    '<details class="terms"><summary>How the offer works</summary><ol>' + o.steps.map(s => '<li>' + esc(s) + '</li>').join("") + '</ol><p class="muted">Sample offer terms.</p></details>';
 }
 // ---------- Partner landing pages ----------
 // Same building blocks as the live partner pages (brand hero, featured promotions, category tiles, product grids,
@@ -593,7 +597,7 @@ function mobileBarFor(p, variant) {
 function comparePage(sample) {
   const ids = sample ? ["gpu-mid", "gpu-compact", "gpu-unavailable", "gpu-value"] : comparison;
   const list = ids.map(id => byId.get(id));
-  if (!list.length) return breadcrumb("Compare") + '<h1>Compare products</h1><div class="empty"><p>Pick up to four products with the Compare button on any card.</p><a class="primary" href="#compare/sample">Try a sample GPU comparison</a></div>';
+  if (!list.length) return emptyShoppingPage("Compare", "Compare products", "Select Compare on up to four products to see their specs side by side.", "Browse products", "#shop", "Try a sample comparison", "#compare/sample");
   const labels = [...new Set(list.flatMap(p => specRows(p).map(([l]) => l)))];
   const rows = [["Price", list.map(p => money(p.pricePhp))], ["Availability", list.map(p => chip(p.status, p))],
     ["Offers", list.map(p => liveOffersFor(p.id).map(o => esc(o.partner) + " · " + esc(o.benefit)).join("<br>") || "—")],
@@ -615,7 +619,7 @@ let cartChoice = "", stockChanged = false;
 function cartPage(sample) {
   if (sample && !basket.size) { basket.set("monitor-fhd", 1); basket.set("laptop-lenovo", 1); }
   const entries = [...basket];
-  if (!entries.length) return breadcrumb("Cart") + '<h1>Your cart</h1><div class="empty"><p>Your demo cart is empty.</p><a class="primary" href="#shop?available=1">Shop in-stock items</a> <a href="#cart/sample">Load a sample cart</a></div>';
+  if (!entries.length) return emptyShoppingPage("Cart", "Your cart is empty", "Add an item to see pickup and delivery options.", "Continue shopping", "#shop?available=1", "Load a sample cart", "#cart/sample");
   const lines = entries.map(([id, n]) => ({ p: byId.get(id), n, changed: stockChanged && id === "monitor-fhd" }));
   const subtotal = lines.filter(l => !l.changed).reduce((a, l) => a + l.p.pricePhp * l.n, 0);
   const fee = cartChoice ? delivery[cartChoice].fee : null;
@@ -687,11 +691,21 @@ function review() {
   return breadcrumb("What’s improved") + '<h1>What’s improved</h1><p class="lede">Each change keeps every partner placement and every listed product, and makes it easier to buy online.</p><div class="review-list">' +
     reviewItems.map(([n, d, a, b]) => '<article><h2>' + esc(n) + '</h2><p>' + esc(d) + '</p><p><a href="' + a + '">Try it</a> · <a href="' + b + '">Related view</a></p></article>').join("") + '</div>';
 }
+const emptyIcons = {
+  Wishlist: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+  Cart: '<path d="M3 4h2l2.5 11h10L20 7H6"/><circle cx="9" cy="19" r="1"/><circle cx="17" cy="19" r="1"/>',
+  Compare: '<path d="M7 4v14m0 0-3-3m3 3 3-3m7 5V6m0 0-3 3m3-3 3 3"/>',
+};
+function emptyShoppingPage(page, heading, message, label, href, sampleLabel, sampleHref) {
+  return breadcrumb(page) + '<section class="shopping-empty"><svg viewBox="0 0 24 24" width="42" height="42" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + emptyIcons[page] + '</svg>' +
+    '<h1>' + heading + '</h1><p>' + message + '</p><div class="shopping-empty-actions"><a class="primary" href="' + href + '">' + label + '</a>' +
+    (sampleHref ? '<a class="text-link" href="' + sampleHref + '">' + sampleLabel + '</a>' : '') + '</div></section>';
+}
 function wishlistPage() {
   const list = memory.wish.map(id => byId.get(id)).filter(Boolean);
-  return breadcrumb("Wishlist") + '<h1>Your wishlist</h1>' + (list.length
-    ? '<p class="muted">' + list.length + (list.length === 1 ? ' item' : ' items') + ' saved in this browser.</p>' + grid(list)
-    : '<div class="empty"><p>Tap the heart on any product page to save it here.</p><a class="primary" href="#shop?available=1">Shop in-stock items</a></div>');
+  if (!list.length) return emptyShoppingPage("Wishlist", "Your wishlist is empty", "Use the heart on a product page to save it for later.", "Browse products", "#shop");
+  return breadcrumb("Wishlist") + '<h1>Your wishlist</h1><p class="muted">' +
+    list.length + (list.length === 1 ? ' item' : ' items') + ' saved in this browser.</p>' + grid(list);
 }
 const missing = () => '<h1>Page unavailable</h1><p><a href="#home">Return home</a></p>';
 
