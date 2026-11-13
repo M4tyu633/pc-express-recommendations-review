@@ -426,8 +426,10 @@ body.v2 { padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe
   width:100%; min-width:0; min-height:44px; padding:8px 10px; border:1px solid #aeb9cc;
   border-radius:4px; background:#fff; color:var(--ink); font-size:16px;
 }
-.v2 .newsletter-form button { min-height:44px; white-space:nowrap; }
-.v2 .newsletter-form p { grid-column:1 / -1; min-height:1.4em; font-size:13px; }
+.v2 .newsletter-form input::placeholder { color:var(--sub); opacity:1; }
+.v2 .newsletter-form button { min-height:44px; white-space:nowrap; background:var(--blue); }
+.v2 .newsletter-form button:hover { background:var(--blue-d); }
+.v2 .newsletter-form p { grid-column:1 / -1; min-height:1.4em; color:var(--sub); font-size:13px; }
 @media (max-width:680px) {
   .v2 .newsletter { grid-template-columns:minmax(0, 1fr); }
 }

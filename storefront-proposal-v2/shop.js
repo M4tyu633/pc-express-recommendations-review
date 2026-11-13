@@ -938,6 +938,10 @@ function render({ scroll = false } = {}) {
     const chat = document.getElementById("help-chat");
     chat.scrollIntoView({ block: "start" });
     if (scroll) chat.focus({ preventScroll: true });
+  } else if (page === "home" && key === "newsletter") {
+    const newsletter = document.getElementById("newsletter");
+    newsletter.scrollIntoView({ block: "start" });
+    if (scroll) newsletter.querySelector("input").focus({ preventScroll: true });
   } else if (scroll) {
     if (option === "items" || key === "items") document.querySelector("#eligible-models")?.scrollIntoView();
     else if (page === "offer" && key && location.hash.endsWith("/items")) document.querySelector("#eligible-models")?.scrollIntoView();
