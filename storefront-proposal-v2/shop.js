@@ -1047,6 +1047,78 @@ function setSearchPlaceholder() {
 }
 compactSearch.addEventListener("change", setSearchPlaceholder);
 setSearchPlaceholder();
+
+function initSearchShortcuts() {
+  const shortcuts = document.querySelector(".search-shortcuts");
+  const controls = shortcuts.querySelector(".shortcut-controls");
+  const groups = [...shortcuts.querySelectorAll(".shortcut-group")];
+  const pause = controls.querySelector("[data-shortcuts-pause]");
+  const status = shortcuts.querySelector('[role="status"]');
+  const motion = matchMedia("(prefers-reduced-motion: reduce)");
+  let groupIndex = 0;
+  let pausedByUser;
+  let hovered = false;
+  let timer;
+  let animation;
+
+  function showGroup(step, announce = false) {
+    animation?.cancel();
+    groups[groupIndex].hidden = true;
+    groupIndex = (groupIndex + step + groups.length) % groups.length;
+    const group = groups[groupIndex];
+    group.hidden = false;
+    if (!motion.matches) {
+      animation = group.animate([
+        { opacity: 0, transform: "translateX(" + (step * 14) + "px)" },
+        { opacity: 1, transform: "translateX(0)" },
+      ], { duration: 260, easing: "ease-out" });
+    }
+    if (announce) status.textContent = "Shortcuts " + (groupIndex + 1) + " of " + groups.length;
+    scheduleRotation();
+  }
+
+  function scheduleRotation() {
+    clearTimeout(timer);
+    const paused = pausedByUser ?? motion.matches;
+    pause.setAttribute("aria-label", paused ? "Resume shortcut rotation" : "Pause shortcut rotation");
+    pause.querySelector("[data-pause-icon]").toggleAttribute("hidden", paused);
+    pause.querySelector("[data-play-icon]").toggleAttribute("hidden", !paused);
+    if (paused || hovered || compactSearch.matches || document.hidden ||
+        shortcuts.matches(":has(:focus-visible), :has(.shortcut-links :focus)")) return;
+    timer = setTimeout(() => showGroup(1), 5000);
+  }
+
+  shortcuts.addEventListener("pointerenter", event => {
+    if (event.pointerType === "touch") return;
+    hovered = true;
+    animation?.finish();
+    scheduleRotation();
+  });
+  shortcuts.addEventListener("pointerleave", event => {
+    if (event.pointerType === "touch") return;
+    hovered = false;
+    scheduleRotation();
+  });
+  shortcuts.addEventListener("focusin", scheduleRotation);
+  shortcuts.addEventListener("focusout", () => queueMicrotask(scheduleRotation));
+  controls.querySelectorAll("[data-shortcuts-step]").forEach(button => {
+    button.addEventListener("click", () => showGroup(Number(button.dataset.shortcutsStep), true));
+  });
+  pause.addEventListener("click", () => {
+    pausedByUser = !(pausedByUser ?? motion.matches);
+    scheduleRotation();
+  });
+  compactSearch.addEventListener("change", () => {
+    hovered = false;
+    scheduleRotation();
+  });
+  motion.addEventListener("change", scheduleRotation);
+  document.addEventListener("visibilitychange", scheduleRotation);
+  controls.hidden = false;
+  scheduleRotation();
+}
+
+initSearchShortcuts();
 query.addEventListener("focus", renderSuggest);
 query.addEventListener("input", renderSuggest);
 query.addEventListener("keydown", e => {
