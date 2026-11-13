@@ -34,9 +34,9 @@ body.v2 { padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe
 .v2 .util-bar a { color:#fff; margin-left:10px; }
 .v2 .util-proposal b { color:#fff; }
 .v2 .site-header { background:#fff; box-shadow:none; position:relative; z-index:5; }
-.v2 .shop-header { display:grid; grid-template-columns:auto minmax(0, 1fr) auto; grid-template-areas:"logo search tools" ". shortcuts shortcuts"; gap:6px clamp(12px, 2vw, 24px); align-items:center; padding-block:12px 10px; }
+.v2 .shop-header { display:grid; grid-template-columns:auto minmax(0, 1fr) auto; grid-template-areas:"logo search tools" "logo shortcuts shortcuts"; gap:6px clamp(12px, 2vw, 24px); align-items:center; padding-block:12px 10px; }
 .v2 .shop-logo { grid-area:logo; min-width:0; }
-.v2 .shop-logo img { width:clamp(170px, 16vw, 216px); max-width:100%; height:auto; display:block; }
+.v2 .shop-logo img { width:clamp(170px, 17vw, 232px); max-width:100%; height:auto; display:block; }
 .v2 .shop-search { grid-area:search; display:flex; height:38px; border:1px solid var(--blue); border-radius:4px; overflow:hidden; }
 .v2 .search-shortcuts { grid-area:shortcuts; display:flex; gap:clamp(8px, 1vw, 15px); min-width:0; overflow-x:auto; scrollbar-width:thin; }
 .v2 .search-shortcuts a { display:inline-flex; align-items:center; min-height:24px; color:var(--sub); font-size:13px; line-height:1.25; text-decoration:none; white-space:nowrap; }
