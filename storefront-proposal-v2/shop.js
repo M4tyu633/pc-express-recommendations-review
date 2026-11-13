@@ -85,7 +85,7 @@ const offers = [
   { id: "laptop-bundle", partner: "NVIDIA", title: "Gaming laptop bundle", benefit: "Free wireless mouse with selected RTX laptops", cardBenefit: "Free wireless mouse", cardIcon: "gift", cardLabel: "Free",
     start: "2026-11-01", end: "2026-12-14", claim: null, items: ["laptop-lenovo", "laptop-a16", "laptop-msi"], art: "slide-7.jpg",
     steps: ["Add an eligible laptop to your cart. The gift appears on the order automatically.", "Sales confirms stock and the gift with your order.", "The mouse ships or is released with the laptop."] },
-  { id: "asus-reward", partner: "ASUS", title: "ASUS gaming gear reward", benefit: "₱500 e-wallet reward per eligible item", cardBenefit: "₱500 e-wallet reward", cardIcon: "reward", cardLabel: "₱500 reward", compactLabel: "₱500",
+  { id: "asus-reward", partner: "ASUS", title: "ASUS gaming gear cashback", benefit: "₱500 e-wallet cashback per eligible item", cardBenefit: "₱500 e-wallet cashback", cardLabel: "Cashback", cashbackAmount: 500,
     start: "2026-11-10", end: "2026-12-31", claim: "2027-01-15", items: ["monitor-qhd", "keyboard", "gpu-unavailable"], art: "slide-1.jpg",
     steps: ["Buy an eligible ASUS item between Nov 10 and Dec 31.", "Keep your PC Express invoice.", "Submit the claim on the partner page by Jan 15."] },
   { id: "gpu-holiday", partner: "NVIDIA", title: "Holiday graphics card deals", benefit: "Bundle price on RTX graphics cards with a power supply", cardBenefit: "GPU and power supply bundle", cardIcon: "bundle", cardLabel: "PSU bundle", compactLabel: "Bundle",
@@ -150,16 +150,19 @@ const availText = (p, s = p.status) => ({
 const availClass = (p, s = p.status) => "avail s-" + s + (s === "buy" && p.stock <= LOW_STOCK ? " low" : "");
 const avail = (p, s = p.status) => '<p class="' + availClass(p, s) + '">' + availText(p, s) + '</p>';
 const offerIcons = {
-  gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8H8.5A2.5 2.5 0 1 1 11 5.5L12 8Zm0 0h3.5A2.5 2.5 0 1 0 13 5.5L12 8Z"/>',
-  reward: '<path d="M20 8V6a2 2 0 0 0-2-2L5 7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-2M5 7h13a2 2 0 0 1 2 2v2"/><path d="M16 11h5v5h-5a2.5 2.5 0 0 1 0-5Z"/><path d="M16.5 13.5h.01"/>',
-  bundle: '<path d="m12 3 9 4.5v9L12 21l-9-4.5v-9L12 3ZM3 7.5l9 4.5 9-4.5M12 12v9M7.5 5.25l9 4.5"/>',
+  gift: '<path d="M11 13v7H5a1 1 0 0 1-1-1v-6h7Zm9 0v6a1 1 0 0 1-1 1h-6v-7h7ZM8.5 4c1.5 0 2.7 1 3.5 2.3C12.8 5 14 4 15.5 4A2.5 2.5 0 0 1 18 6.5c0 .6-.2 1.1-.5 1.5H20a1 1 0 0 1 1 1v2h-8V8h-2v3H3V9a1 1 0 0 1 1-1h2.5A2.5 2.5 0 0 1 8.5 4Zm0 1.5a1 1 0 0 0 0 2h2c-.5-1-1.2-2-2-2Zm7 0c-.8 0-1.5 1-2 2h2a1 1 0 0 0 0-2Z"/>',
+  bundle: '<path d="m12 3 8.6 4.3-8.6 4.3-8.6-4.3L12 3ZM3 9l8 4v8l-8-4V9Zm18 0v8l-8 4v-8l8-4Z"/>',
 };
 function cardOffer(promo) {
-  const icon = '<svg aria-hidden="true" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
-    offerIcons[promo.cardIcon] + '</svg>';
+  const href = '#offer/' + promo.id;
+  if (promo.cashbackAmount) {
+    return '<a class="card-offer card-cashback" href="' + href + '" aria-label="' + esc(promo.cardBenefit) + '">' +
+      '<strong>' + money(promo.cashbackAmount) + '</strong><span>' + esc(promo.cardLabel) + '</span></a>';
+  }
+  const icon = '<svg aria-hidden="true" viewBox="0 0 24 24" width="15" height="15" fill="currentColor">' + offerIcons[promo.cardIcon] + '</svg>';
   const label = promo.cardIcon === "gift" ? "Free gift details" : promo.cardBenefit;
   const compact = promo.compactLabel ? '<span class="card-offer-compact">' + esc(promo.compactLabel) + '</span>' : '';
-  return '<a class="card-offer card-' + promo.cardIcon + '" href="#offer/' + promo.id + '" aria-label="' + esc(label) + '">' +
+  return '<a class="card-offer card-' + promo.cardIcon + '" href="' + href + '" aria-label="' + esc(label) + '">' +
     icon + '<span>' + esc(promo.cardLabel) + '</span>' + compact + '</a>';
 }
 function card(p, opts = {}) {
