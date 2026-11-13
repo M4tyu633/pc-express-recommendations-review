@@ -82,16 +82,16 @@ const inCategory = (product, kind) => !kind || (kind === "parts" ? partCategorie
 
 // ---------- Partner offers: one record drives banner, terms, badges, cart and retirement ----------
 const offers = [
-  { id: "laptop-bundle", partner: "NVIDIA", title: "Gaming laptop bundle", benefit: "Free wireless mouse with selected RTX laptops", cardBenefit: "Free wireless mouse", cardIcon: "gift", cardLabel: "Free",
+  { id: "laptop-bundle", partner: "NVIDIA", title: "Gaming laptop bundle", benefit: "Free wireless mouse with selected RTX laptops", cardBenefit: "Free wireless mouse", cardKind: "gift", cardLabel: "Free",
     start: "2026-11-01", end: "2026-12-14", claim: null, items: ["laptop-lenovo", "laptop-a16", "laptop-msi"], art: "slide-7.jpg",
     steps: ["Add an eligible laptop to your cart. The gift appears on the order automatically.", "Sales confirms stock and the gift with your order.", "The mouse ships or is released with the laptop."] },
-  { id: "asus-reward", partner: "ASUS", title: "ASUS gaming gear cashback", benefit: "₱500 e-wallet cashback per eligible item", cardBenefit: "₱500 e-wallet cashback", cardIcon: "cashback", cardLabel: "₱500 cashback", compactLabel: "₱500 back",
+  { id: "asus-reward", partner: "ASUS", title: "ASUS gaming gear cashback", benefit: "₱500 e-wallet cashback per eligible item", cardBenefit: "₱500 e-wallet cashback", cardKind: "cashback", cardLabel: "₱500 back",
     start: "2026-11-10", end: "2026-12-31", claim: "2027-01-15", items: ["monitor-qhd", "keyboard", "gpu-unavailable"], art: "slide-1.jpg",
     steps: ["Buy an eligible ASUS item between Nov 10 and Dec 31.", "Keep your PC Express invoice.", "Submit the claim on the partner page by Jan 15."] },
-  { id: "gpu-holiday", partner: "NVIDIA", title: "Holiday graphics card deals", benefit: "Bundle price on RTX graphics cards with a power supply", cardBenefit: "GPU and power supply bundle", cardIcon: "bundle", cardLabel: "PSU bundle", compactLabel: "Bundle",
+  { id: "gpu-holiday", partner: "NVIDIA", title: "Holiday graphics card deals", benefit: "Bundle price on RTX graphics cards with a power supply", cardBenefit: "GPU and power supply bundle", cardKind: "bundle", cardLabel: "PSU bundle", compactLabel: "Bundle",
     start: "2026-12-01", end: "2026-12-31", claim: null, items: ["gpu-mid", "gpu-compact", "gpu-max", "gpu-entry"], art: "slide-5.jpg",
     steps: ["Choose an eligible card and a listed power supply.", "The bundle price applies in the cart during the offer dates."] },
-  { id: "gamer-days", partner: "Intel", title: "Gamer days game bundle", benefit: "Free game code with selected Intel PCs", cardBenefit: "Free game code", cardIcon: "gift", cardLabel: "Free",
+  { id: "gamer-days", partner: "Intel", title: "Gamer days game bundle", benefit: "Free game code with selected Intel PCs", cardBenefit: "Free game code", cardKind: "gift", cardLabel: "Free",
     start: "2026-08-10", end: "2026-09-13", claim: "2026-10-31", items: ["laptop-msi", "desktop-in", "desktop-ms"], art: "../partner-assets/intel/Intel-IGD-1800x600.webp",
     steps: ["Buy an eligible Intel system during the purchase period.", "Redeem the code by the claim date."] },
 ];
@@ -150,16 +150,16 @@ const availText = (p, s = p.status) => ({
 const availClass = (p, s = p.status) => "avail s-" + s + (s === "buy" && p.stock <= LOW_STOCK ? " low" : "");
 const avail = (p, s = p.status) => '<p class="' + availClass(p, s) + '">' + availText(p, s) + '</p>';
 const offerIcons = {
-  cashback: '<path fill-rule="evenodd" d="M3 5a2 2 0 0 1 2-2h6l9.4 9.4a2 2 0 0 1 0 2.8l-5.2 5.2a2 2 0 0 1-2.8 0L3 11V5Zm5.5 5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"/>',
   gift: '<path d="M11 13v7H5a1 1 0 0 1-1-1v-6h7Zm9 0v6a1 1 0 0 1-1 1h-6v-7h7ZM8.5 4c1.5 0 2.7 1 3.5 2.3C12.8 5 14 4 15.5 4A2.5 2.5 0 0 1 18 6.5c0 .6-.2 1.1-.5 1.5H20a1 1 0 0 1 1 1v2h-8V8h-2v3H3V9a1 1 0 0 1 1-1h2.5A2.5 2.5 0 0 1 8.5 4Zm0 1.5a1 1 0 0 0 0 2h2c-.5-1-1.2-2-2-2Zm7 0c-.8 0-1.5 1-2 2h2a1 1 0 0 0 0-2Z"/>',
   bundle: '<path d="m12 3 8.6 4.3-8.6 4.3-8.6-4.3L12 3ZM3 9l8 4v8l-8-4V9Zm18 0v8l-8 4v-8l8-4Z"/>',
 };
 function cardOffer(promo) {
   const href = '#offer/' + promo.id;
-  const icon = '<svg aria-hidden="true" viewBox="0 0 24 24" width="15" height="15" fill="currentColor">' + offerIcons[promo.cardIcon] + '</svg>';
-  const label = promo.cardIcon === "gift" ? "Free gift details" : promo.cardBenefit;
+  const mark = offerIcons[promo.cardKind];
+  const icon = mark ? '<svg aria-hidden="true" viewBox="0 0 24 24" width="15" height="15" fill="currentColor">' + mark + '</svg>' : '';
+  const label = promo.cardKind === "gift" ? "Free gift details" : promo.cardBenefit;
   const compact = promo.compactLabel ? '<span class="card-offer-compact">' + esc(promo.compactLabel) + '</span>' : '';
-  return '<a class="card-offer card-' + promo.cardIcon + '" href="' + href + '" aria-label="' + esc(label) + '">' +
+  return '<a class="card-offer card-' + promo.cardKind + '" href="' + href + '" aria-label="' + esc(label) + '">' +
     icon + '<span>' + esc(promo.cardLabel) + '</span>' + compact + '</a>';
 }
 function card(p, opts = {}) {
@@ -170,8 +170,8 @@ function card(p, opts = {}) {
     '<div class="card-price-line"><p class="price">' + money(p.pricePhp) + (p.status === "quote" ? ' <small>last listed</small>' : '') + '</p>' +
     (promo ? cardOffer(promo) : '') + '</div>' +
     '<p class="meta"><span class="' + availClass(p) + '">' + availText(p) + '</span>' + (p.paidOrdersLast30Days ? '<span class="sold">' + p.paidOrdersLast30Days + ' sold</span>' : '') + '</p>' +
-    (opts.note ? '<p class="rec-note">' + esc(opts.note) + '</p>' : '') +
-    '<div class="button-row">' + actionButton(p) + compareButton(p) + '</div></div></article>';
+    '<div class="button-row">' + actionButton(p) + compareButton(p) + '</div>' +
+    (opts.note ? '<p class="rec-note">' + esc(opts.note) + '</p>' : '') + '</div></article>';
 }
 const grid = (items, opts) => '<div class="shop-grid">' + items.map(p => card(p, opts?.(p))).join("") + '</div>';
 const breadcrumb = s => '<p class="breadcrumb"><a href="#home">Home</a> <span aria-hidden="true">/</span> ' + esc(s) + '</p>';
