@@ -225,8 +225,8 @@ function stagePane([key, name, color, slide, head, copy, items], i) {
     items.map(id => byId.get(id)).map(p => '<figure><img src="/pcx-assets/' + esc(p.image) + '" alt="" width="480" height="480" loading="lazy"><figcaption><b>' + money(p.pricePhp) + '</b><span class="' + availClass(p) + '">' + availText(p) + '</span></figcaption></figure>').join("") + '</div></a>';
 }
 function teTile() {
-  const [, , color, , head, , items] = stagePartners[0];
-  return '<a class="side-tile te" href="#partner/taiwan-excellence" style="--brand:' + color + '"><div><img class="te-logo" src="/partner-assets/taiwan-excellence/Taiwan-Logo-2.png" alt="Taiwan Excellence" width="900" height="250"><p>' + esc(head) + '</p><span class="pane-cta">Shop the collection <span aria-hidden="true">›</span></span></div>' +
+  const [, , , , head, , items] = stagePartners[0];
+  return '<a class="side-tile te" href="#partner/taiwan-excellence"><div><img class="te-logo" src="/partner-assets/taiwan-excellence/Taiwan-Logo-2.png" alt="Taiwan Excellence" width="900" height="250"><p>' + esc(head) + '</p><span class="pane-cta">Shop the collection <span aria-hidden="true">›</span></span></div>' +
     '<div class="side-products">' + items.slice(0, 2).map(id => '<img src="/pcx-assets/' + esc(byId.get(id).image) + '" alt="" width="480" height="480">').join("") + '</div></a>';
 }
 function offerSide() {
@@ -296,8 +296,7 @@ function shelfArrows(title) {
 function partnerRow(pl) {
   sessionViews[pl.key]++;
   const items = arrange(pl.items, pl.hero);
-  const color = stagePartners.find(([k]) => k === pl.key)?.[2] ?? "#0a3a99";
-  return '<section class="shelf partner-row" data-partner="' + pl.key + '" style="--brand:' + color + '"><div class="row-head"><div class="row-title">' + (wordmark(pl.key) ?? '') + '<div><h2>' + esc(pl.title) + '</h2>' +
+  return '<section class="shelf partner-row" data-partner="' + pl.key + '"><div class="row-head"><div class="row-title">' + (wordmark(pl.key) ?? '') + '<div><h2>' + esc(pl.title) + '</h2>' +
     '</div></div><div class="shelf-tools"><a class="text-link" href="#partner/' + pl.key + '">View all <span aria-hidden="true">›</span></a>' + shelfArrows(pl.title) + '</div></div>' +
     grid(items) + '</section>';
 }

@@ -76,10 +76,9 @@
 .v2 .side-tile { position:relative; display:flex; justify-content:space-between; gap:8px; overflow:hidden; border-radius:6px; padding:14px; text-decoration:none; color:var(--ink); border:1px solid var(--line); background:#fff; min-height:0; }
 .v2 .side-tile p { margin:6px 0; font-size:14px; line-height:1.3; }
 .v2 .side-tile .pane-cta { color:var(--blue); font-size:13px; white-space:nowrap; }
-.v2 .side-tile.te { border-color:#f1c7cc; border-top:3px solid var(--brand); align-items:center; }
+.v2 .side-tile.te { align-items:center; }
 .v2 .side-tile.te > div:first-child { flex:1; }
 .v2 .side-tile.te p { font-size:15px; font-weight:700; }
-.v2 .side-tile.te .pane-cta { color:var(--brand); }
 .v2 .side-products { display:grid; grid-template-columns:1fr 1fr; gap:6px; width:44%; align-items:center; flex:none; }
 .v2 .side-products img { width:100%; height:auto; aspect-ratio:1; object-fit:contain; }
 .v2 .side-tile.offer { background:#fffaf0; border-color:#f1d9a6; flex-direction:column; justify-content:flex-start; }
@@ -123,7 +122,7 @@
 .v2 .picks > .row-head { align-items:center; }
 .v2 .row-title { display:flex; align-items:center; gap:14px; }
 .v2 .row-title > .wm { min-width:96px; justify-content:center; padding:8px 10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
-.v2 .partner-row { background:#fff; border:1px solid var(--line); border-top:3px solid var(--brand); border-radius:6px; padding:16px; }
+.v2 .partner-row { background:#fff; border:1px solid var(--line); border-radius:6px; padding:16px; }
 .v2 .partner-row > .shop-grid, .v2 .picks > .shop-grid {
   --cards-per-row:4;
   --card-gap:12px;
