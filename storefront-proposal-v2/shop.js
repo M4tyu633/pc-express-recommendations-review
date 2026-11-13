@@ -82,16 +82,16 @@ const inCategory = (product, kind) => !kind || (kind === "parts" ? partCategorie
 
 // ---------- Partner offers: one record drives banner, terms, badges, cart and retirement ----------
 const offers = [
-  { id: "laptop-bundle", partner: "NVIDIA", title: "Gaming laptop bundle", benefit: "Free wireless mouse with selected RTX laptops", cardBenefit: "Free wireless mouse", gift: true,
+  { id: "laptop-bundle", partner: "NVIDIA", title: "Gaming laptop bundle", benefit: "Free wireless mouse with selected RTX laptops", cardBenefit: "Free wireless mouse", cardIcon: "gift", cardLabel: "Free",
     start: "2026-11-01", end: "2026-12-14", claim: null, items: ["laptop-lenovo", "laptop-a16", "laptop-msi"], art: "slide-7.jpg",
     steps: ["Add an eligible laptop to your cart. The gift appears on the order automatically.", "Sales confirms stock and the gift with your order.", "The mouse ships or is released with the laptop."] },
-  { id: "asus-reward", partner: "ASUS", title: "ASUS gaming gear reward", benefit: "₱500 e-wallet reward per eligible item", cardBenefit: "₱500 e-wallet reward", cardLabel: "₱500 reward", compactLabel: "Reward",
+  { id: "asus-reward", partner: "ASUS", title: "ASUS gaming gear reward", benefit: "₱500 e-wallet reward per eligible item", cardBenefit: "₱500 e-wallet reward", cardIcon: "reward", cardLabel: "₱500 reward", compactLabel: "₱500",
     start: "2026-11-10", end: "2026-12-31", claim: "2027-01-15", items: ["monitor-qhd", "keyboard", "gpu-unavailable"], art: "slide-1.jpg",
     steps: ["Buy an eligible ASUS item between Nov 10 and Dec 31.", "Keep your PC Express invoice.", "Submit the claim on the partner page by Jan 15."] },
-  { id: "gpu-holiday", partner: "NVIDIA", title: "Holiday graphics card deals", benefit: "Bundle price on RTX graphics cards with a power supply", cardBenefit: "GPU and power supply bundle", cardLabel: "PSU bundle", compactLabel: "Bundle",
+  { id: "gpu-holiday", partner: "NVIDIA", title: "Holiday graphics card deals", benefit: "Bundle price on RTX graphics cards with a power supply", cardBenefit: "GPU and power supply bundle", cardIcon: "bundle", cardLabel: "PSU bundle", compactLabel: "Bundle",
     start: "2026-12-01", end: "2026-12-31", claim: null, items: ["gpu-mid", "gpu-compact", "gpu-max", "gpu-entry"], art: "slide-5.jpg",
     steps: ["Choose an eligible card and a listed power supply.", "The bundle price applies in the cart during the offer dates."] },
-  { id: "gamer-days", partner: "Intel", title: "Gamer days game bundle", benefit: "Free game code with selected Intel PCs", cardBenefit: "Free game code", gift: true,
+  { id: "gamer-days", partner: "Intel", title: "Gamer days game bundle", benefit: "Free game code with selected Intel PCs", cardBenefit: "Free game code", cardIcon: "gift", cardLabel: "Free",
     start: "2026-08-10", end: "2026-09-13", claim: "2026-10-31", items: ["laptop-msi", "desktop-in", "desktop-ms"], art: "../partner-assets/intel/Intel-IGD-1800x600.webp",
     steps: ["Buy an eligible Intel system during the purchase period.", "Redeem the code by the claim date."] },
 ];
@@ -149,14 +149,18 @@ const availText = (p, s = p.status) => ({
 })[s];
 const availClass = (p, s = p.status) => "avail s-" + s + (s === "buy" && p.stock <= LOW_STOCK ? " low" : "");
 const avail = (p, s = p.status) => '<p class="' + availClass(p, s) + '">' + availText(p, s) + '</p>';
+const offerIcons = {
+  gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8H8.5A2.5 2.5 0 1 1 11 5.5L12 8Zm0 0h3.5A2.5 2.5 0 1 0 13 5.5L12 8Z"/>',
+  reward: '<path d="M20 8V6a2 2 0 0 0-2-2L5 7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-2M5 7h13a2 2 0 0 1 2 2v2"/><path d="M16 11h5v5h-5a2.5 2.5 0 0 1 0-5Z"/><path d="M16.5 13.5h.01"/>',
+  bundle: '<path d="m12 3 9 4.5v9L12 21l-9-4.5v-9L12 3ZM3 7.5l9 4.5 9-4.5M12 12v9M7.5 5.25l9 4.5"/>',
+};
 function cardOffer(promo) {
-  const href = ' href="#offer/' + promo.id + '"';
-  if (!promo.gift) {
-    return '<a class="card-offer"' + href + ' title="' + esc(promo.benefit) + '"><span>' + esc(promo.cardLabel) + '</span><span class="card-offer-compact">' + esc(promo.compactLabel) + '</span></a>';
-  }
-  const gift = '<svg aria-hidden="true" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
-    '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8H8.5A2.5 2.5 0 1 1 11 5.5L12 8Zm0 0h3.5A2.5 2.5 0 1 0 13 5.5L12 8Z"/></svg>';
-  return '<a class="card-offer card-gift"' + href + ' aria-label="Free gift details">' + gift + 'Free</a>';
+  const icon = '<svg aria-hidden="true" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+    offerIcons[promo.cardIcon] + '</svg>';
+  const label = promo.cardIcon === "gift" ? "Free gift details" : promo.cardBenefit;
+  const compact = promo.compactLabel ? '<span class="card-offer-compact">' + esc(promo.compactLabel) + '</span>' : '';
+  return '<a class="card-offer card-' + promo.cardIcon + '" href="#offer/' + promo.id + '" aria-label="' + esc(label) + '">' +
+    icon + '<span>' + esc(promo.cardLabel) + '</span>' + compact + '</a>';
 }
 function card(p, opts = {}) {
   const promo = liveOffersFor(p.id)[0];
